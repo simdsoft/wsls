@@ -18,9 +18,13 @@ namespace wsls {
     int make_bridge(const wchar_t* shell, const wchar_t* app);
 
     std::string readFileData(const char* fileName);
-    void writeFileData(const char* fileName, const std::string& content);
+	void writeFileData(const char* fileName, const std::string& content);
     void convertPathToWinStyle(std::string& path, size_t offset = 0);
+	void convertPathToWinStyle(std::wstring& path, size_t offset = 0);
+	void convertPathToUnixStyle(std::wstring& path, size_t offset = 0);
+	bool isExecFileExist(const wchar_t* _FileName);
     std::wstring transcode$IL(std::string_view mcb, UINT cp = CP_ACP);
+    std::string transcode$IL(std::wstring_view mcb, UINT cp = CP_ACP);
     std::wstring makeStyledPath(const char* _FileName);
     std::wstring makeStyledPath(const wchar_t* _FileName);
 };
