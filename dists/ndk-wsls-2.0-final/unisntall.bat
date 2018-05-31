@@ -1,4 +1,6 @@
 @echo off
+cd /d %~dp0
+
 set ndkRoot=%1
 
 if not defined ndkRoot set ndkRoot=D:\android_devenv\adt-bundle-windows\sdk\ndk-bundle
@@ -7,7 +9,7 @@ pushd %ndkRoot%
 
 copy /y prebuilt\windows-x86_64\bin\ndk-make.exe prebuilt\windows-x86_64\bin\make.exe
 
-D:\devtools\ndk-wsls-180531c\lcopy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-g++.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-g++.exe
+lcopy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-g++.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-g++.exe
 copy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-gcc.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-gcc.exe
 
 copy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin\ndk-ld.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin\ld.exe

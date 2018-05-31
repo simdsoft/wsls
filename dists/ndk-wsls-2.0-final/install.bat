@@ -1,14 +1,15 @@
 @echo off
-pushd %~dp0
+cd /d %~dp0
 
 set ndkRoot=%1
 if not defined ndkRoot set ndkRoot=%ANDROID_NDK_ROOT%
 
-if not defined ndkRoot set ndkRoot=D:\android_devenv\adt-bundle-windows\sdk\ndk-bundle
-
 if not defined ndkRoot echo Please specific ANDROID_NDK_ROOT! && goto :L_exit
 
 if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
+
+copy /y lcopy.exe %WINDIR%\System32\
+copy /y ldel.exe %WINDIR%\System32\
 
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe
 
@@ -32,8 +33,14 @@ echo Installing patch for %instApp%...
 if not exist %instApp%.bridge echo Install patch for %instApp% failed, missing .bridge config file. && goto :eof
 
 fc wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
-if %errorlevel%==0 echo The patch for %instApp% already installed. && goto :eof
+if not %errorlevel%==0 goto :L_continue
+fc wsLongPaths.dll "%instDir%\wsLongPaths.dll" 1>nul 2>nul
+if not %errorlevel%==0 goto :L_continue
 
+echo The patch for %instApp% already installed.
+goto :L_exit
+
+:L_continue
 if not exist "%instDir%\ndk-%instApp%" lcopy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 lcopy wsls-core.exe "%instDir%\%instApp%"
 lcopy %instApp%.bridge "%instDir%\%instApp%.bridge"
