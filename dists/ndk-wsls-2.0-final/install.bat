@@ -12,6 +12,7 @@ copy /y lcopy.exe %WINDIR%\System32\
 copy /y ldel.exe %WINDIR%\System32\
 
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe
+call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe
 
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin" arm-linux-androideabi-g++.exe
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin" arm-linux-androideabi-gcc.exe
