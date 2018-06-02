@@ -21,6 +21,7 @@ call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin" as.exe
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin" ar.exe
 
+call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\libexec\gcc\arm-linux-androideabi\4.9.x" cc1.exe
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\libexec\gcc\arm-linux-androideabi\4.9.x" cc1plus.exe
 call :InstPatch "%ndkRoot%\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\libexec\gcc\arm-linux-androideabi\4.9.x" collect2.exe
 
