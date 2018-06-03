@@ -11,7 +11,7 @@ https://github.com/halx99/wow64helper
 # minhook
 https://github.com/TsudaKageyu/minhook
 
-# Long Paths Support
+# Microsoft Long Paths Support document
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
 
 
