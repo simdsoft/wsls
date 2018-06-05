@@ -330,7 +330,7 @@ int make_bridge(const wchar_t* shell, const wchar_t* app)
     std::wstring title = si.lpTitle;
     do_replace(title, shell, app);
 
-    DWORD flags = CREATE_SUSPENDED;// DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS;
+    DWORD flags = CREATE_SUSPENDED;
     BOOL succeed = CreateProcessW(nullptr,
         &maketool.front(),
         nullptr,
@@ -356,8 +356,6 @@ int make_bridge(const wchar_t* shell, const wchar_t* app)
     sei.lpDirectory = fileName;
 
     succeed = ShellExecuteEx(&sei);
-
-    // DebugActiveProcessStop(pi.dwProcessId);
 
     //@*** Wait inject complete
     WaitForSingleObject(sei.hProcess, INFINITE);
