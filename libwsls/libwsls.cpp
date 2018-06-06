@@ -1,9 +1,9 @@
 ﻿// stdafx.cpp : source file that includes just the standard includes
-// libwsls.pch will be the pre-compiled header
+// libwsls.pch will be the pre-compiled header 
 // stdafx.obj will contain the pre-compiled type information
 
 // TODO: reference any additional headers you need in STDAFX.H
-// and not in this file V2.0 2018.5.31 12:06
+// and not in this file V2.0 2018.6.6 
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -225,12 +225,6 @@ std::string transcode$IL(std::wstring_view wcb, UINT cp)
 	return buffer;
 }
 
-template<typename _Elem> inline
-bool isStyledLongPath(const _Elem* _Path)
-{
-    return _Path[0] == '\\' && _Path[1] == '\\' && _Path[2] == '?' && _Path[3] == '\\';
-}
-
 std::wstring makeStyledPath(const char* _FileName)
 {
 	if (_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
@@ -274,6 +268,52 @@ std::wstring makeStyledPath(const wchar_t* _FileName)
     }
 
     return L"";
+}
+
+template<typename _Elem, typename _Fty> inline
+void dir_split(_Elem* s, const _Fty& op) 
+{
+    _Elem* _Start = s; // the start of every string
+    _Elem* _Ptr = s;   // source string iterator
+    if (isStyledLongPath(_Ptr))
+        _Ptr += (sizeof(UNC_PREFIX) - 1);
+    while (*_Ptr != '\0')
+    {
+        if ('\\' == *_Ptr || '/' == *_Ptr)
+        {
+            ++_Ptr;
+            if (_Ptr != _Start) {
+                auto _Ch = *_Ptr;
+                *_Ptr = '\0';
+                bool should_brk = op(s);
+                *_Ptr = _Ch;
+                if (should_brk) {
+                    return;
+                }
+            }
+            _Start = _Ptr;
+        }
+        else ++_Ptr;
+    }
+    if (_Start != _Ptr) {
+        op(s);
+    }
+}
+int mkdir(std::wstring&& _Path)
+{
+    int error = 0;
+    dir_split(&_Path.front(), [&](const wchar_t* subdir) {
+        auto fileAttr = ::GetFileAttributesW(subdir);
+        if (fileAttr == INVALID_FILE_ATTRIBUTES || !(fileAttr & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            if (!::CreateDirectoryW(subdir, nullptr)) {
+                error = ::GetLastError();
+                return true;
+            }
+        }
+        return false;
+    });
+    return error;
 }
 
 int make_bridge(const wchar_t* shell, const wchar_t* app)

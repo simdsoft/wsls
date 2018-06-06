@@ -10,6 +10,7 @@ if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
 
 copy /y wsls-copy.exe %WINDIR%\System32\
 copy /y wsls-del.exe %WINDIR%\System32\
+copy /y wsls-md.exe %WINDIR%\System32\
 
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe

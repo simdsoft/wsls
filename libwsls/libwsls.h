@@ -16,7 +16,6 @@ namespace wsls {
     bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
     int replace(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
     int make_bridge(const wchar_t* shell, const wchar_t* app);
-
     std::string readFileData(const char* fileName);
 	void writeFileData(const char* fileName, const std::string& content);
     void convertPathToWinStyle(std::string& path, size_t offset = 0);
@@ -25,6 +24,14 @@ namespace wsls {
 	bool isExecFileExist(const wchar_t* _FileName);
     std::wstring transcode$IL(std::string_view mcb, UINT cp = CP_ACP);
     std::string transcode$IL(std::wstring_view mcb, UINT cp = CP_ACP);
+    
     std::wstring makeStyledPath(const char* _FileName);
     std::wstring makeStyledPath(const wchar_t* _FileName);
+    int mkdir(std::wstring&& _Path);
+	
+	template<typename _Elem> inline
+    bool isStyledLongPath(const _Elem* _Path)
+    {
+        return _Path[0] == '\\' && _Path[1] == '\\' && _Path[2] == '?' && _Path[3] == '\\';
+    }
 };
