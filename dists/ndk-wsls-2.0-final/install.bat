@@ -8,8 +8,8 @@ if not defined ndkRoot echo Please specific ANDROID_NDK_ROOT! && goto :L_exit
 
 if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
 
-copy /y lcopy.exe %WINDIR%\System32\
-copy /y ldel.exe %WINDIR%\System32\
+copy /y wsls_copy.exe %WINDIR%\System32\
+copy /y wsls_del.exe %WINDIR%\System32\
 
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe
