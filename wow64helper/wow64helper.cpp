@@ -186,8 +186,8 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
     if (ntdll != nullptr) {
         RtlCreateUserThread = (RtlCreateUserThreadProc)GetProcAddress(ntdll, "RtlCreateUserThread");
         RtlExitUserThread = GetProcAddress(ntdll, "RtlExitUserThread");
-		ZwSuspendProcess = (ZwSuspendProcessProc)GetProcAddress(ntdll, "ZwSuspendProcess");
-		ZwResumeProcess = (ZwResumeProcessProc)GetProcAddress(ntdll, "ZwResumeProcess");
+        ZwSuspendProcess = (ZwSuspendProcessProc)GetProcAddress(ntdll, "ZwSuspendProcess");
+        ZwResumeProcess = (ZwResumeProcessProc)GetProcAddress(ntdll, "ZwResumeProcess");
     }
 
     auto szCmdLine = GetCommandLine();
@@ -200,11 +200,11 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
         DWORD dwPID = wcstoul(argv[2], nullptr, 10);
         HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
-		
+
         if (hProcess == nullptr)
             return ret;
 
-		ZwSuspendProcess(hProcess);
+        ZwSuspendProcess(hProcess);
 
         DWORD exitCode = 0;
 
@@ -235,7 +235,7 @@ bool rpcall(int option, HANDLE hProcess, void* StartAddress, void* StartParamete
 
         exitCode = 0;
 
-		ZwResumeProcess(hProcess);
+        ZwResumeProcess(hProcess);
         if (hRemoteThread != NULL)
         {
             WaitForSingleObject(hRemoteThread, INFINITE);
@@ -268,7 +268,7 @@ bool rpcall(int option, HANDLE hProcess, void* StartAddress, void* StartParamete
             &hRemoteThread,          // ThreadHandle
             &clientId);              // ClientID)
 
-		ZwResumeProcess(hProcess);
+        ZwResumeProcess(hProcess);
         if (INVALID_HANDLE_VALUE != hRemoteThread)
         {
             WaitForSingleObject(hRemoteThread, INFINITE);
@@ -284,7 +284,7 @@ bool rpcall(int option, HANDLE hProcess, void* StartAddress, void* StartParamete
 
 bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, char* lpProcName, wchar_t* argt, wchar_t** argv, int argc, DWORD& exitCode)
 { // FOR API: CreateRemoteThreads
-    uint64_t procAddress = 0  ;
+    uint64_t procAddress = 0;
     if (wcscmp(lpModuleName, L"null") != 0) {
         HMODULE hModule = GetModuleHandleW(lpModuleName);
         if (hModule == nullptr)
