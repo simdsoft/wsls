@@ -27,6 +27,11 @@ namespace wsls {
     
     std::wstring makeStyledPath(const char* _FileName);
     std::wstring makeStyledPath(const wchar_t* _FileName);
+
+    bool isFileExists(const wchar_t* _Path);
+    bool isDirectoryExists(const wchar_t* _Path);
+    bool isAbsolutePath(const wchar_t* strPath);
+
     int mkdir(std::wstring&& _Path);
 	
 	template<typename _Elem> inline

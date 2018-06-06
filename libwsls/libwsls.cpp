@@ -3,7 +3,7 @@
 // stdafx.obj will contain the pre-compiled type information
 
 // TODO: reference any additional headers you need in STDAFX.H
-// and not in this file V2.0 2018.6.6 
+// and not in this file V2.0 2018.6.6
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -248,6 +248,25 @@ std::wstring makeStyledPath(const char* _FileName)
     return L"";
 }
 
+bool isFileExists(const wchar_t* _Path)
+{
+    auto attr = ::GetFileAttributesW(_Path);
+    return attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+bool isDirectoryExists(const wchar_t* _Path)
+{
+    auto attr = ::GetFileAttributesW(_Path);
+    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+bool isAbsolutePath(const wchar_t* strPath)
+{
+    return (((strPath[0] >= 'a' && strPath[0] <= 'z') || (strPath[0] >= 'A' && strPath[0] <= 'Z'))
+        && strPath[1] == ':');
+
+}
+
 std::wstring makeStyledPath(const wchar_t* _FileName)
 {
 	if (_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
@@ -303,8 +322,7 @@ int mkdir(std::wstring&& _Path)
 {
     int error = 0;
     dir_split(&_Path.front(), [&](const wchar_t* subdir) {
-        auto fileAttr = ::GetFileAttributesW(subdir);
-        if (fileAttr == INVALID_FILE_ATTRIBUTES || !(fileAttr & FILE_ATTRIBUTE_DIRECTORY))
+        if (!isDirectoryExists(subdir))
         {
             if (!::CreateDirectoryW(subdir, nullptr)) {
                 error = ::GetLastError();
