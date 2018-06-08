@@ -10,7 +10,7 @@ pushd %ndkRoot%
 copy /y prebuilt\windows-x86_64\bin\ndk-make.exe prebuilt\windows-x86_64\bin\make.exe
 copy /y prebuilt\windows-x86_64\bin\ndk-cmp.exe prebuilt\windows-x86_64\bin\cmp.exe
 
-lcopy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-g++.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-g++.exe
+wsls-copy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-g++.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-g++.exe
 copy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\ndk-arm-linux-androideabi-gcc.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin\arm-linux-androideabi-gcc.exe
 
 copy /y toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin\ndk-ld.exe toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin\ld.exe

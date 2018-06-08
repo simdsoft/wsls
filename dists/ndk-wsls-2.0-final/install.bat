@@ -44,12 +44,12 @@ echo The patch for %instApp% already installed.
 goto :L_exit
 
 :L_continue
-if not exist "%instDir%\ndk-%instApp%" lcopy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
-lcopy wsls-core.exe "%instDir%\%instApp%"
-lcopy %instApp%.bridge "%instDir%\%instApp%.bridge"
+if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
+wsls-copy wsls-core.exe "%instDir%\%instApp%"
+wsls-copy %instApp%.bridge "%instDir%\%instApp%.bridge"
 
-lcopy wow64helper.exe "%instDir%\wow64helper.exe"
-lcopy wsLongPaths.dll "%instDir%\wsLongPaths.dll"
+wsls-copy wow64helper.exe "%instDir%\wow64helper.exe"
+wsls-copy wsLongPaths.dll "%instDir%\wsLongPaths.dll"
 
 echo Installing patch for %instApp% succeed.
 goto :eof
