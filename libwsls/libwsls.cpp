@@ -388,6 +388,7 @@ namespace wsls {
         std::wstring title = si.lpTitle;
         do_replace(title, shell, app);
 
+        si.lpTitle = &title.front();
         DWORD flags = CREATE_SUSPENDED;
         BOOL succeed = CreateProcessW(nullptr,
             &maketool.front(),
@@ -400,6 +401,11 @@ namespace wsls {
             &si,
             &pi
         );
+
+        if (!succeed) {
+            wprintf(L"make bridge failed %s --> %s, create original process failed!", shell, app);
+            return GetLastError();
+        }
 
         SHELLEXECUTEINFOW sei = { sizeof(SHELLEXECUTEINFOW) };
 
