@@ -3,7 +3,7 @@
 // stdafx.obj will contain the pre-compiled type information
 
 // TODO: reference any additional headers you need in STDAFX.H
-// and not in this file V2.0 2018.6.6
+// and not in this file V2.1 2018.6.30
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -175,14 +175,41 @@ namespace wsls {
         return data;
     }
 
-    void writeFileData(const char* fileName, const std::string& content)
-    {
-        auto fp = fopen(fileName, "wb");
-        if (fp != nullptr) {
-            fwrite(content.c_str(), 1, content.size(), fp);
-            fclose(fp);
-        }
+int writeFileData(const char* fileName, const std::string& content, bool append)
+{
+    auto styledPath = makeStyledPath(fileName);
+    if (styledPath.empty()) {
+        styledPath = transcode$IL(fileName);
     }
+    HANDLE hFile = CreateFileW(styledPath.c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_ALWAYS,
+        0,
+        nullptr);
+
+    if (hFile != INVALID_HANDLE_VALUE) {
+        LARGE_INTEGER li;
+        ::GetFileSizeEx(hFile, &li);
+        auto size = li.QuadPart;
+        if (size > 0 && append) {
+            li.QuadPart = 0;
+            ::SetFilePointerEx(hFile, li, nullptr, FILE_END) != FALSE;
+        }
+        else {
+            ::SetEndOfFile(hFile);
+        }
+
+        DWORD bytesToWrite = 0;
+        WriteFile(hFile, content.c_str(), content.size(), &bytesToWrite, nullptr);
+
+        CloseHandle(hFile);
+        return 0;
+    }
+
+    return GetLastError();
+}
 
     void convertPathToWinStyle(std::string& path, size_t offset)
     {

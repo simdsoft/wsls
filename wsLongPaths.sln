@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4E34C083-A
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-md", "wsls-md\wsls-md.vcxproj", "{9BF72423-717F-4889-A81E-7336F7A5AFAE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-echo", "wsls-echo\wsls-echo.vcxproj", "{31930FB3-9764-49B8-BE95-0403F9E5DEAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -116,6 +118,14 @@ Global
 		{9BF72423-717F-4889-A81E-7336F7A5AFAE}.Release|x64.Build.0 = Release|x64
 		{9BF72423-717F-4889-A81E-7336F7A5AFAE}.Release|x86.ActiveCfg = Release|Win32
 		{9BF72423-717F-4889-A81E-7336F7A5AFAE}.Release|x86.Build.0 = Release|Win32
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Debug|x64.ActiveCfg = Debug|x64
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Debug|x64.Build.0 = Debug|x64
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Debug|x86.ActiveCfg = Debug|Win32
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Debug|x86.Build.0 = Debug|Win32
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x64.ActiveCfg = Release|x64
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x64.Build.0 = Release|x64
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x86.ActiveCfg = Release|Win32
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +140,7 @@ Global
 		{9576C26A-8F28-4B4F-8D8C-92EE4CFEBE5E} = {3E910FC3-40A4-48F0-9D0E-17D833258261}
 		{AE9909AA-51BF-401E-A3B0-966A587CD1C0} = {4E34C083-A6FF-4128-90B2-D2A6E1E3575B}
 		{9BF72423-717F-4889-A81E-7336F7A5AFAE} = {13C90FA4-3E91-4004-9144-DE4410E632D1}
+		{31930FB3-9764-49B8-BE95-0403F9E5DEAC} = {13C90FA4-3E91-4004-9144-DE4410E632D1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B89B0A9-AD53-43DC-8B3E-5BDEBC39FFEE}

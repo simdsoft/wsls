@@ -17,7 +17,7 @@ namespace wsls {
     int replace(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
     int make_bridge(const wchar_t* shell, const wchar_t* app);
     std::string readFileData(const char* fileName);
-    void writeFileData(const char* fileName, const std::string& content);
+	int writeFileData(const char* fileName, const std::string& content, bool append = false);
     void convertPathToWinStyle(std::string& path, size_t offset = 0);
     void convertPathToWinStyle(std::wstring& path, size_t offset = 0);
     void convertPathToUnixStyle(std::wstring& path, size_t offset = 0);
