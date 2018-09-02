@@ -195,7 +195,7 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
         auto size = li.QuadPart;
         if (size > 0 && append) {
             li.QuadPart = 0;
-            ::SetFilePointerEx(hFile, li, nullptr, FILE_END) != FALSE;
+            ::SetFilePointerEx(hFile, li, nullptr, FILE_END);
         }
         else {
             ::SetEndOfFile(hFile);
