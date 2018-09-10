@@ -1,9 +1,10 @@
 ﻿// stdafx.cpp : source file that includes just the standard includes
-// libwsls.pch will be the pre-compiled header 
+// libwsls.pch will be the pre-compiled header
 // stdafx.obj will contain the pre-compiled type information
 
 // TODO: reference any additional headers you need in STDAFX.H
-// and not in this file V2.1 2018.6.30
+// and not in this file
+// version: V2.2 2018.9.10
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
