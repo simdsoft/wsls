@@ -1,4 +1,4 @@
-﻿// wsls-echo.cpp : Defines the entry point for the console application.
+// wsls-echo.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
@@ -73,10 +73,6 @@ int main(int argc, char** argv)
                     {
                         redirectPath[pathend] = endCh;
                         // Try redirect again
-                        if (!wsls::isFileExists(L"D:\\workspace\\ndk-workaround.log"))
-                        {
-                            wsls::writeFileData("D:\\workspace\\ndk-workaround.log", content);
-                        }
                         iRet = wsls::writeFileData(redirectPath.c_str(), content, redirectType == 2);
                     }
                 }
