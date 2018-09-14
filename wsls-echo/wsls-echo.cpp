@@ -54,7 +54,36 @@ int main(int argc, char** argv)
 
     if (redirectType > 0) {
         if (!redirectPath.empty()) {
+
             iRet = wsls::writeFileData(redirectPath.c_str(), content, redirectType == 2);
+            if (iRet == ERROR_PATH_NOT_FOUND) { 
+			/* Some times, the ndk system call wsls-md to make directory will failed random.
+			It's so strangely, so we do a workaround for redirect command.
+			*/
+                auto pathend = redirectPath.find_last_of("/\\");
+                if (pathend != std::string::npos) {
+                    auto endCh = redirectPath[pathend];
+                    redirectPath[pathend] = '\0';
+
+                    auto styledPath = wsls::makeStyledPath(redirectPath.c_str());
+                    if (styledPath.empty()) styledPath = wsls::transcode$IL(redirectPath.c_str());
+
+                    iRet = wsls::mkdir(std::move(styledPath));
+                    if (iRet == 0)
+                    {
+                        redirectPath[pathend] = endCh;
+                        // Try redirect again
+                        if (!wsls::isFileExists(L"D:\\workspace\\ndk-workaround.log"))
+                        {
+                            wsls::writeFileData("D:\\workspace\\ndk-workaround.log", content);
+                        }
+                        iRet = wsls::writeFileData(redirectPath.c_str(), content, redirectType == 2);
+                    }
+                }
+                else {
+                    iRet = ERROR_INVALID_PARAMETER;
+                }
+            }
         }
         else {
             iRet = ERROR_INVALID_PARAMETER;

@@ -203,7 +203,7 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
         }
 
         DWORD bytesToWrite = 0;
-        WriteFile(hFile, content.c_str(), content.size(), &bytesToWrite, nullptr);
+        WriteFile(hFile, content.c_str(), static_cast<DWORD>(content.size()), &bytesToWrite, nullptr);
 
         CloseHandle(hFile);
         return 0;
@@ -239,17 +239,17 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
     }
     std::wstring transcode$IL(std::string_view mcb, UINT cp)
     {
-        int cchWideChar = MultiByteToWideChar(cp, 0, mcb.data(), mcb.length(), NULL, 0);
+        int cchWideChar = MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), NULL, 0);
         std::wstring buffer(cchWideChar, '\0');
-        MultiByteToWideChar(cp, 0, mcb.data(), mcb.length(), &buffer.front(), cchWideChar);
+        MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), &buffer.front(), cchWideChar);
         return buffer;
     }
 
     std::string transcode$IL(std::wstring_view wcb, UINT cp)
     {
-        int cchMultiByte = WideCharToMultiByte(cp, 0, wcb.data(), wcb.length(), NULL, 0, NULL, NULL);
+        int cchMultiByte = WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), NULL, 0, NULL, NULL);
         std::string buffer(cchMultiByte, '\0');
-        WideCharToMultiByte(cp, 0, wcb.data(), wcb.length(), &buffer.front(), cchMultiByte, NULL, NULL);
+        WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), &buffer.front(), cchMultiByte, NULL, NULL);
         return buffer;
     }
 
@@ -258,7 +258,7 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
         if (_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
         {
             auto wFileName = transcode$IL(_FileName);
-            int nBufferLength = GetFullPathNameW(wFileName.c_str(), 0, nullptr, nullptr);
+            DWORD nBufferLength = GetFullPathNameW(wFileName.c_str(), 0, nullptr, nullptr);
             if (nBufferLength > 0) {
                 std::wstring uncPath(nBufferLength + UNC_PREFIX_LEN, '\0');
                 memcpy(&uncPath.front(), UNC_PREFIXW, UNC_PREFIX_LEN << 1);
@@ -299,7 +299,7 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
     {
         if (_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
         {
-            int nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
+            DWORD nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
             if (nBufferLength > 0) {
                 std::wstring uncPath(nBufferLength + UNC_PREFIX_LEN, '\0');
                 memcpy(&uncPath.front(), UNC_PREFIXW, UNC_PREFIX_LEN << 1);
