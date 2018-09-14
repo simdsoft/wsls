@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V2.2 2018.9.10
+// version: V2.2 2018.9.15 r6
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -176,41 +176,41 @@ namespace wsls {
         return data;
     }
 
-int writeFileData(const char* fileName, const std::string& content, bool append)
-{
-    auto styledPath = makeStyledPath(fileName);
-    if (styledPath.empty()) {
-        styledPath = transcode$IL(fileName);
-    }
-    HANDLE hFile = CreateFileW(styledPath.c_str(),
-        GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ,
-        NULL,
-        OPEN_ALWAYS,
-        0,
-        nullptr);
-
-    if (hFile != INVALID_HANDLE_VALUE) {
-        LARGE_INTEGER li;
-        ::GetFileSizeEx(hFile, &li);
-        auto size = li.QuadPart;
-        if (size > 0 && append) {
-            li.QuadPart = 0;
-            ::SetFilePointerEx(hFile, li, nullptr, FILE_END);
+    int writeFileData(const char* fileName, const std::string& content, bool append)
+    {
+        auto styledPath = makeStyledPath(fileName);
+        if (styledPath.empty()) {
+            styledPath = transcode$IL(fileName);
         }
-        else {
-            ::SetEndOfFile(hFile);
+        HANDLE hFile = CreateFileW(styledPath.c_str(),
+            GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ,
+            NULL,
+            OPEN_ALWAYS,
+            0,
+            nullptr);
+
+        if (hFile != INVALID_HANDLE_VALUE) {
+            LARGE_INTEGER li;
+            ::GetFileSizeEx(hFile, &li);
+            auto size = li.QuadPart;
+            if (size > 0 && append) {
+                li.QuadPart = 0;
+                ::SetFilePointerEx(hFile, li, nullptr, FILE_END);
+            }
+            else {
+                ::SetEndOfFile(hFile);
+            }
+
+            DWORD bytesToWrite = 0;
+            WriteFile(hFile, content.c_str(), static_cast<DWORD>(content.size()), &bytesToWrite, nullptr);
+
+            CloseHandle(hFile);
+            return 0;
         }
 
-        DWORD bytesToWrite = 0;
-        WriteFile(hFile, content.c_str(), static_cast<DWORD>(content.size()), &bytesToWrite, nullptr);
-
-        CloseHandle(hFile);
-        return 0;
+        return GetLastError();
     }
-
-    return GetLastError();
-}
 
     void convertPathToWinStyle(std::string& path, size_t offset)
     {
@@ -253,29 +253,6 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
         return buffer;
     }
 
-    std::wstring makeStyledPath(const char* _FileName)
-    {
-        if (_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
-        {
-            auto wFileName = transcode$IL(_FileName);
-            DWORD nBufferLength = GetFullPathNameW(wFileName.c_str(), 0, nullptr, nullptr);
-            if (nBufferLength > 0) {
-                std::wstring uncPath(nBufferLength + UNC_PREFIX_LEN, '\0');
-                memcpy(&uncPath.front(), UNC_PREFIXW, UNC_PREFIX_LEN << 1);
-
-                if (GetFullPathNameW(wFileName.c_str(), nBufferLength, &uncPath.front() + UNC_PREFIX_LEN, nullptr) < nBufferLength)
-                {
-#if defined(_DEBUG)
-                    _wsystem(sfmt(LR"(echo "wsLongPath.dll: convert NON-UNC long path to UNC Path: %s")", uncPath.c_str()).c_str());
-#endif
-                    return uncPath;
-                }
-            }
-        }
-
-        return L"";
-    }
-
     bool isFileExists(const wchar_t* _Path)
     {
         auto attr = ::GetFileAttributesW(_Path);
@@ -295,16 +272,23 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
 
     }
 
-    std::wstring makeStyledPath(const wchar_t* _FileName)
-    {
-        if (_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD && !isStyledLongPath(_FileName))
-        {
-            DWORD nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
-            if (nBufferLength > 0) {
-                std::wstring uncPath(nBufferLength + UNC_PREFIX_LEN, '\0');
-                memcpy(&uncPath.front(), UNC_PREFIXW, UNC_PREFIX_LEN << 1);
+    static  std::wstring makeStyledPathInternal(bool uncPrefix, const wchar_t* _FileName)
+    { /*
+      clang 5.0.2
+      android-ndk-r16b clang 5.0.300080
+      will simply add prefix R"(\\?\)" for too long path,
+      but it's not ok, we should convert it to windows styled path for windows File APIs happy.
+      */
+        if (!uncPrefix || !isStyledPath(_FileName + UNC_PREFIX_LEN)) {
+            size_t offset = UNC_PREFIX_LEN;
+            if (uncPrefix) offset = 0;
 
-                if (GetFullPathNameW(_FileName, nBufferLength, &uncPath.front() + UNC_PREFIX_LEN, nullptr) < nBufferLength)
+            int nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
+            if (nBufferLength > 0) {
+                std::wstring uncPath(nBufferLength + offset, '\0');
+                memcpy(&uncPath.front(), UNC_PREFIXW, offset << 1);
+
+                if (GetFullPathNameW(_FileName, nBufferLength, &uncPath.front() + offset, nullptr) < nBufferLength)
                 {
 #if defined(_DEBUG)
                     _wsystem(sfmt(LR"(echo "wsLongPath.dll: convert NON-UNC long path to UNC Path: %s")", uncPath.c_str()).c_str());
@@ -317,12 +301,37 @@ int writeFileData(const char* fileName, const std::string& content, bool append)
         return L"";
     }
 
+    std::wstring makeStyledPath(const char* _FileName)
+    {
+        bool uncPrefix = hasUNCPrefix(_FileName);
+        if ((_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD)
+            || uncPrefix) // If already prefix, we need to fix path to styled windows path.
+        {
+            auto wFileName = transcode$IL(_FileName);
+            return makeStyledPathInternal(uncPrefix, wFileName.c_str());
+        }
+
+        return L"";
+    }
+
+    std::wstring makeStyledPath(const wchar_t* _FileName)
+    {
+        bool uncPrefix = hasUNCPrefix(_FileName);
+        if ((_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD)
+            || uncPrefix) // If already prefix, we need to fix path to styled windows path.
+        {
+            return makeStyledPathInternal(uncPrefix, _FileName);
+        }
+
+        return L"";
+    }
+
     template<typename _Elem, typename _Fty> inline
         void dir_split(_Elem* s, const _Fty& op)
     {
         _Elem* _Start = s; // the start of every string
         _Elem* _Ptr = s;   // source string iterator
-        if (isStyledLongPath(_Ptr))
+        if (hasUNCPrefix(_Ptr))
             _Ptr += (sizeof(UNC_PREFIX) - 1);
         while (*_Ptr != '\0')
         {
