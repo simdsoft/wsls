@@ -12,7 +12,7 @@
 #define UNC_PREFIX "\\\\?\\"
 #define UNC_PREFIXW L"\\\\?\\"
 
-// pitfall: crt file APIs will may failed with > 248, so we subtract 15 to make crt happy.
+// pitfall: CRT file APIs will may failed with > 248, so we subtract 15 to make CRT happy.
 #define LONG_PATH_THRESHOLD (MAX_PATH - 12 - 15) 
 
 static const size_t UNC_PREFIX_LEN = sizeof(UNC_PREFIX) - 1;
@@ -279,7 +279,7 @@ namespace wsls {
       will simply add prefix R"(\\?\)" for too long path,
       but it's not ok, we should convert it to windows styled path for windows File APIs happy.
       */
-        if (!uncPrefix || !isStyledPath(_FileName + UNC_PREFIX_LEN)) {
+        if (!uncPrefix || !isStyledWindowsPath(_FileName + UNC_PREFIX_LEN)) {
             size_t offset = UNC_PREFIX_LEN;
             if (uncPrefix) offset = 0;
 
