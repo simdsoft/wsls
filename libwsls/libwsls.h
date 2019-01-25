@@ -35,8 +35,34 @@ namespace wsls {
     int mkdir(std::wstring&& _Path);
 
     template<typename _Elem> inline
-        bool isStyledLongPath(const _Elem* _Path)
+        bool hasUNCPrefix(const _Elem* _Path)
     {
         return _Path[0] == '\\' && _Path[1] == '\\' && _Path[2] == '?' && _Path[3] == '\\';
+    }
+
+    template<typename _Elem> inline
+        bool isStyledPath(const _Elem* _Path)
+    {
+        int slashs = 0;
+        int dots = 0;
+        while (*_Path) {
+            switch (*_Path) {
+            case '/': return false;
+            case '\\': 
+                ++slashs;
+                if (dots > 0) return false;
+                break;
+            case '.':
+                ++dots;
+                if (slashs > 0) return false;
+            default:
+                if(slashs > 0) --slashs;
+                if(dots > 0) --dots;
+                break;
+            }
+            ++_Path;
+        }
+
+        return true;
     }
 };
