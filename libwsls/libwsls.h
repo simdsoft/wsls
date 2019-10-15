@@ -31,6 +31,7 @@ std::wstring makeStyledPath(const wchar_t* _FileName);
 bool isFileExists(const wchar_t* _Path);
 bool isDirectoryExists(const wchar_t* _Path);
 bool isAbsolutePath(const wchar_t* strPath);
+const char* getFileShortName(std::string_view _FileName);
 
 int mkdir(std::wstring&& _Path);
 

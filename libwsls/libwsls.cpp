@@ -269,7 +269,14 @@ namespace wsls {
     {
         return (((strPath[0] >= 'a' && strPath[0] <= 'z') || (strPath[0] >= 'A' && strPath[0] <= 'Z'))
             && strPath[1] == ':');
+    }
 
+    const char* getFileShortName(std::string_view _FileName)
+    {
+        auto slash = _FileName.find_last_of("/\\");
+        if (slash != std::wstring::npos)
+            return _FileName.data() + slash + 1;
+        return !_FileName.empty() ? _FileName.data() : "";
     }
 
     static  std::wstring makeStyledPathInternal(bool uncPrefix, const wchar_t* _FileName)
@@ -373,9 +380,9 @@ namespace wsls {
 
     int make_bridge(const wchar_t* shell, const wchar_t* app)
     {
-        //#if defined(_DEBUG) 
-        //	MessageBox(nullptr, sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
-        //#endif
+        #if defined(_DEBUG) 
+        	MessageBox(nullptr, sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
+        #endif
 
         auto lpCmdLine = GetCommandLineW();
 

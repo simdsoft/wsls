@@ -23,7 +23,7 @@ int main(int /*argc*/, char** /*argv*/)
             return ERROR_OPERATION_ABORTED;
         }
 
-        std::wstring shell = wsls::transcode$IL(fileName);
+        std::wstring shell = wsls::transcode$IL(wsls::getFileShortName(fileName));
 
         strcpy(fileName + n, ".bridge");
         std::wstring app = wsls::transcode$IL(wsls::readFileData(fileName));
