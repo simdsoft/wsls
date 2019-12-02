@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.1 2019.10.15 r5
+// version: V3.1.1 2019.12.2 r3
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -239,18 +239,24 @@ namespace wsls {
     }
     std::wstring transcode$IL(std::string_view mcb, UINT cp)
     {
-        int cchWideChar = MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), NULL, 0);
-        std::wstring buffer(cchWideChar, '\0');
-        MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), &buffer.front(), cchWideChar);
-        return buffer;
+        if (!mcb.empty()) {
+            int cchWideChar = MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), NULL, 0);
+            std::wstring buffer(cchWideChar, '\0');
+            MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), &buffer.front(), cchWideChar);
+            return buffer;
+        }
+        return L"";
     }
 
     std::string transcode$IL(std::wstring_view wcb, UINT cp)
     {
-        int cchMultiByte = WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), NULL, 0, NULL, NULL);
-        std::string buffer(cchMultiByte, '\0');
-        WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), &buffer.front(), cchMultiByte, NULL, NULL);
-        return buffer;
+        if (!wcb.empty()) {
+            int cchMultiByte = WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), NULL, 0, NULL, NULL);
+            std::string buffer(cchMultiByte, '\0');
+            WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), &buffer.front(), cchMultiByte, NULL, NULL);
+            return buffer;
+        }
+        return "";
     }
 
     bool isFileExists(const wchar_t* _Path)
@@ -380,9 +386,9 @@ namespace wsls {
 
     int make_bridge(const wchar_t* shell, const wchar_t* app)
     {
-        #if defined(_DEBUG) 
-        	MessageBox(nullptr, sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
-        #endif
+        //#if defined(_DEBUG) 
+        //	MessageBox(nullptr, sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
+        //#endif
 
         auto lpCmdLine = GetCommandLineW();
 
