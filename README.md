@@ -1,4 +1,7 @@
 # wsLongPaths
+
+[![Release](https://img.shields.io/badge/release-v3.2-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
+
 * Purpose: This is a generic LongPaths patch for any x86/x64 application which does not support LongPaths.
 * This patch can make Android ndk r14 or later support LongPaths on windows platform.
   
