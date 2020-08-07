@@ -8,4 +8,5 @@
   * build_x86.bat: can build x86 with vs2019, call build.bat
 
 * android-ndk: should use x64
-* android-sdk: will have x86 tool, such as aidl.exe in build-tools/{revision}/aidl.exe also doesn't support Long Path
+* android-sdk: will have x86 tool, such as aidl.exe in build-tools/{revision}/aidl.exe also doesn't support Long Path, so you need  
+use install-sdk.bat to install patch for aidl.exe of specific build-tools revision
