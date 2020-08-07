@@ -14,16 +14,28 @@ if not defined ndkRoot echo Please specific ANDROID_NDK! && goto :L_exit
 if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
 
 del /s /f /q "%ndkRoot%\*.bridge" 2>nul
+del /s /f /q "%ndkRoot%\*wsLongPaths.dll" 2>nul
+del /s /f /q "%ndkRoot%\*wow64helper.exe" 2>nul
 
-rem fix windows system command line
+rem Install wsls core binaires
 if exist %WINDIR%\SysWow64\ (
   copy /y x64\wsls-copy.exe %WINDIR%\System32\
   copy /y x64\wsls-del.exe %WINDIR%\System32\
   copy /y x64\wsls-md.exe %WINDIR%\System32\
+  copy /y x64\wow64helper.exe %WINDIR%\System32\
+  copy /y x64\wsLongPaths.dll %WINDIR%\System32\
+  
+  copy /y x86\wsls-copy.exe %WINDIR%\SysWow64\
+  copy /y x86\wsls-del.exe %WINDIR%\SysWow64\
+  copy /y x86\wsls-md.exe %WINDIR%\SysWow64\
+  copy /y x86\wow64helper.exe %WINDIR%\SysWow64\
+  copy /y x86\wsLongPaths.dll %WINDIR%\SysWow64\
 ) else (
   copy /y x86\wsls-copy.exe %WINDIR%\System32\
   copy /y x86\wsls-del.exe %WINDIR%\System32\
   copy /y x86\wsls-md.exe %WINDIR%\System32\
+  copy /y x86\wow64helper.exe %WINDIR%\System32\
+  copy /y x86\wsLongPaths.dll %WINDIR%\System32\
 )
 
 rem detect ndk revision
@@ -53,6 +65,8 @@ call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe
 rem patching LLVM
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang++.exe
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" arm-linux-androideabi-ar.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\arm-linux-androideabi\bin" ld.exe
 
 rem patching gcc armv7
 call :InstallGccPatch arm-linux-androideabi
@@ -105,8 +119,8 @@ if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir
 wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
 if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
 
-wsls-copy %arch%\wow64helper.exe "%instDir%\wow64helper.exe"
-wsls-copy %arch%\wsLongPaths.dll "%instDir%\wsLongPaths.dll"
+rem wsls-copy %arch%\wow64helper.exe "%instDir%\wow64helper.exe"
+rem wsls-copy %arch%\wsLongPaths.dll "%instDir%\wsLongPaths.dll"
 
 echo Installing patch for %instApp% succeed.
 goto :eof

@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.2 2020.8.7 r3
+// version: V3.2 2020.8.7 r5
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -378,10 +378,10 @@ namespace wsls {
         wchar_t currentDir[MAX_PATH];
         GetCurrentDirectoryW(MAX_PATH, currentDir);
 
-        wchar_t fileName[MAX_PATH];
-        GetModuleFileName(NULL, fileName, MAX_PATH);
+        wchar_t filePath[MAX_PATH];
+        GetModuleFileName(NULL, filePath, MAX_PATH);
 
-        PathRemoveFileSpec(fileName);
+        PathRemoveFileSpec(filePath);
 
         std::wstring maketool = lpCmdLine;
 
@@ -437,13 +437,13 @@ namespace wsls {
 
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
 
-        std::wstring parameter = sfmt(L"1 %u ntdll.dll LdrLoadDll u64;u64;us;s 0 0 %s\\wsLongPaths.dll 00000000", pi.dwProcessId, fileName);
+        std::wstring parameter = sfmt(L"1 %u ntdll.dll LdrLoadDll u64;u64;us;s 0 0 wsLongPaths.dll 00000000", pi.dwProcessId/*, fileName*/);
 
-        std::wstring wow64helper = sfmt(L"%s\\wow64helper.exe", fileName);
+        std::wstring wow64helper = L"wow64helper.exe";
 
         sei.lpFile = wow64helper.c_str();
         sei.lpParameters = parameter.c_str();
-        sei.lpDirectory = fileName;
+        sei.lpDirectory = filePath;
 
         succeed = ShellExecuteEx(&sei);
 
