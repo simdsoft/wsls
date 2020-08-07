@@ -2,9 +2,6 @@ rem 1. Install android sdk long path patch.
 @echo off
 cd /d %~dp0
 
-rem currently, the android sdk arch is x86, so set arch to x86
-set arch=x86
-
 set sdkRoot=%1
 set buildToolsRevision=%2
 if not defined sdkRoot set sdkRoot=%ANDROID_SDK%
@@ -23,6 +20,8 @@ IF NOT defined buildToolsRevision SET buildToolsRevision=28.0.3
 rem the aidl.exe arch is x86 and not support longpath
 rem modify or add build-tool revisions which you want use in your android project
 call :InstPatch "%sdkRoot%\build-tools\%buildToolsRevision%" aidl.exe
+call :InstPatch "%sdkRoot%\cmake\3.6.4111459\bin" ninja.exe
+call :InstPatch "%sdkRoot%\cmake\3.6.4111459\bin" cmake.exe
 
 goto :L_exit
 
@@ -39,20 +38,17 @@ if defined rediretApp wsls-copy %rediretApp% "%instDir%\%rediretApp%"
 fc wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
 if not %errorlevel%==0 goto :L_continue
 
-fc wsLongPaths.dll "%instDir%\wsLongPaths.dll" 1>nul 2>nul
-if not %errorlevel%==0 goto :L_continue
-
 echo The patch for %instApp% already installed.
 goto :L_exit
 
 :L_continue
 if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
+call wsls-arch.exe "%instDir%\ndk-%instApp%"
+set arch=x%errorlevel%
+echo "%instDir%\ndk-%instApp%" arch is: %arch%
 wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
 if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
-
-rem wsls-copy %arch%\wow64helper.exe "%instDir%\wow64helper.exe"
-rem wsls-copy %arch%\wsLongPaths.dll "%instDir%\wsLongPaths.dll"
 
 echo Installing patch for %instApp% succeed.
 goto :eof

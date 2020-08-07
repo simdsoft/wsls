@@ -111,12 +111,9 @@ set instApp=%2
 set rediretApp=%3
 echo Installing patch for %instApp%...
 
-if defined rediretApp wsls-copy %rediretApp% "%instDir%\%rediretApp%"
+if defined rediretApp wsls-copy %arch%\%rediretApp% "%instDir%\%rediretApp%"
 
 fc wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
-if not %errorlevel%==0 goto :L_continue
-
-fc wsLongPaths.dll "%instDir%\wsLongPaths.dll" 1>nul 2>nul
 if not %errorlevel%==0 goto :L_continue
 
 echo The patch for %instApp% already installed.
