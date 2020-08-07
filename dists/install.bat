@@ -1,5 +1,10 @@
+rem 1. Currently, This install script only install patch for android ndk x64 arch tools's .exe.
+rem 2. Some tools of android sdk also need patch, and it's arch is x86, stupid
+rem 3. Futue this script will support install x86
 @echo off
 cd /d %~dp0
+
+set arch=x64
 
 set ndkRoot=%1
 if not defined ndkRoot set ndkRoot=%ANDROID_NDK%
@@ -11,9 +16,15 @@ if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
 del /s /f /q "%ndkRoot%\*.bridge" 2>nul
 
 rem fix windows system command line
-copy /y wsls-copy.exe %WINDIR%\System32\
-copy /y wsls-del.exe %WINDIR%\System32\
-copy /y wsls-md.exe %WINDIR%\System32\
+if exist %WINDIR%\SysWow64\ (
+  copy /y x64\wsls-copy.exe %WINDIR%\System32\
+  copy /y x64\wsls-del.exe %WINDIR%\System32\
+  copy /y x64\wsls-md.exe %WINDIR%\System32\
+) else (
+  copy /y x86\wsls-copy.exe %WINDIR%\System32\
+  copy /y x86\wsls-del.exe %WINDIR%\System32\
+  copy /y x86\wsls-md.exe %WINDIR%\System32\
+)
 
 rem detect ndk revision
 set ndkVer=
@@ -27,8 +38,13 @@ for /f "tokens=1,2* delims=." %%i in ("%ndkVer%") do set ndkMajorVer=%%i
 
 echo Android NDK major version is: %ndkMajorVer%
 
+rem TODO:
+rem set sdkRoot=d:\dev\adt\sdk
+rem call :InstPatch "%sdkRoot%\build-tools\28.0.3" aidl.exe
+rem goto :L_exit
+
 rem patching echo
-wsls-copy wsls-echo.exe "%ndkRoot%\prebuilt\windows-x86_64\bin\wsls-echo.exe"
+wsls-copy %arch%\wsls-echo.exe "%ndkRoot%\prebuilt\windows-x86_64\bin\wsls-echo.exe"
 
 rem patching make.exe & cmp.exe
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe gnumake.exe
@@ -86,11 +102,11 @@ goto :L_exit
 :L_continue
 if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
-wsls-copy wsls-core.exe "%instDir%\%instApp%"
-if exist %instApp%.bridge wsls-copy %instApp%.bridge "%instDir%\%instApp%.bridge"
+wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
+if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
 
-wsls-copy wow64helper.exe "%instDir%\wow64helper.exe"
-wsls-copy wsLongPaths.dll "%instDir%\wsLongPaths.dll"
+wsls-copy %arch%\wow64helper.exe "%instDir%\wow64helper.exe"
+wsls-copy %arch%\wsLongPaths.dll "%instDir%\wsLongPaths.dll"
 
 echo Installing patch for %instApp% succeed.
 goto :eof
