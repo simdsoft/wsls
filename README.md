@@ -11,13 +11,10 @@
 * Some windows systwm command does't support long path even open system LongPath ware config, may windows bug or performance purpose,  
 if you find copy, md, del works with long path on future release of win10, please info me.
   
-## Install patch for android ndk:  
-1. set env var ```ANDROID_NDK``` to your ndk-bundle directory  
-2. right click ```dists/install.bat```, run as administrator.  
-
-## Install patch for android sdk:
-1. Install patch for android ndk first
-2. ```dists/install-sdk.bat <path\to\sdk> <build-tools-revision>```, such as: ```dists/install-sdk.bat d:\dev\adt\sdk 28.0.3```
+## Install patch for android ndk & sdk:  
+1. Set env var ```ANDROID_NDK``` to your ndk-bundle directory  
+2. Install ndk: right click ```dists/install.bat```, run as administrator.  
+3. After ndk installed, install sdk: ```dists/install-sdk.bat <path\to\sdk> <build-tools-revision>```, such as: ```dists/install-sdk.bat d:\dev\adt\sdk 28.0.3```
 
 ## References
 * https://github.com/simdsoft/wow64helper
