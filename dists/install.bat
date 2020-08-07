@@ -11,6 +11,7 @@ if not defined ndkRoot echo Please specific ANDROID_NDK! && goto :L_exit
 
 if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
 
+rem Cleanup old version stubs
 del /s /f /q "%ndkRoot%\*.bridge" 2>nul
 del /s /f /q "%ndkRoot%\*wsLongPaths.dll" 2>nul
 del /s /f /q "%ndkRoot%\*wow64helper.exe" 2>nul

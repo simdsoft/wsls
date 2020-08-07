@@ -13,6 +13,7 @@ if not defined sdkRoot echo Please specific ANDROID_SDK! && goto :L_exit
 
 if not exist %sdkRoot% echo The directory not exist! && goto :L_exit
 
+rem Cleanup old version stubs
 del /s /f /q "%sdkRoot%\*.bridge" 2>nul
 del /s /f /q "%sdkRoot%\*wsLongPaths.dll" 2>nul
 del /s /f /q "%sdkRoot%\*wow64helper.exe" 2>nul
