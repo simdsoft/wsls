@@ -4,6 +4,7 @@
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on windows 7 x64+
 * Feature: This patch can make Android ndk r14 or later support LongPaths on windows 7 x64+
+* TODO: CMake not supported yet
 
 ## Who need this patch?
 * You only want windows, and encounter long path issue on exist software system, such as android ndk,sdk
