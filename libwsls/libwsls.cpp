@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.2 2020.8.7 r1
+// version: V3.2 2020.8.7 r3
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -294,7 +294,7 @@ namespace wsls {
         return L"";
     }
 
-    std::wstring makeStyledPath(const char* _FileName)
+    std::wstring makeStyledPath(const char* _FileName) 
     {
         bool uncPrefix = hasUNCPrefix(_FileName);
         if ((_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD)
@@ -366,10 +366,6 @@ namespace wsls {
 
     int make_bridge(const wchar_t* shell, const wchar_t* app)
     {
-        //#if defined(_DEBUG) 
-        //	MessageBox(nullptr, sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
-        //#endif
-
         auto lpCmdLine = GetCommandLineW();
 
         STARTUPINFO si = { 0 };

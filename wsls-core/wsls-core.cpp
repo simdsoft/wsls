@@ -7,6 +7,12 @@
 #include "../libwsls/libwsls.h"
 
 #if defined(_DEBUG)
+#define WSLS_WAIT_DEBUGGER 0
+#else
+#define WSLS_WAIT_DEBUGGER 0
+#endif
+
+#if defined(_DEBUG)
 #pragma comment(lib, "../x64/Debug/libwsls.lib")
 #else
 #pragma comment(lib, "../x64/Release/libwsls.lib")
@@ -28,8 +34,11 @@ int main(int /*argc*/, char** /*argv*/)
         strcpy(fileName + n, ".bridge");
         std::wstring app = wsls::from_chars(wsls::readFileData(fileName));
         if (app.empty()) // default is the real compile program file name is prefix 'ndk-' 
-            app = L"ndk-" + shell;
+            app = L"ndk-" + shell; 
 
+#if WSLS_WAIT_DEBUGGER 
+        MessageBox(nullptr, wsls::sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
+#endif
         if (!shell.empty() && !app.empty())
             return wsls::make_bridge(shell.c_str(), app.c_str());
         else

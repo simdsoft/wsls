@@ -1,5 +1,5 @@
 // wsLongPaths.cpp : Defines the exported functions for the DLL application.
-// V3.0
+// V3.2
 
 #include "stdafx.h"
 #include <stdio.h>
@@ -11,15 +11,22 @@
 #include "../libwsls/libwsls.h"
 #include "../minhook/include/MinHook.h"
 
-#define HOOK_GETFULLPATHNAME 0
 #define ENABLE_MSGBOX_TRACE 0
 
-#define DEBUG_MODULE L"gnumake.exe"
+#define DEBUG_MODULE L"aidl.exe"
 
+#if defined(_WIN64)
 #if defined(_DEBUG)
 #pragma comment(lib, "../lib/Debug/libMinHook.x64.lib")
 #else
 #pragma comment(lib, "../lib/Release/libMinHook.x64.lib")
+#endif
+#else
+#if defined(_DEBUG)
+#pragma comment(lib, "../lib/Debug/libMinHook.x86.lib")
+#else
+#pragma comment(lib, "../lib/Release/libMinHook.x86.lib")
+#endif
 #endif
 
 #define DEFINE_FUNCTION_PTR(f) static decltype(&f) f##_imp
@@ -37,9 +44,7 @@ DEFINE_FUNCTION_PTR(CreateProcessA);
 DEFINE_FUNCTION_PTR(CreateProcessW);
 DEFINE_FUNCTION_PTR(CreateFileA);
 DEFINE_FUNCTION_PTR(CreateFileW);
-#if HOOK_GETFULLPATHNAME
 DEFINE_FUNCTION_PTR(GetFullPathNameA);
-#endif
 DEFINE_FUNCTION_PTR(GetFileAttributesA);
 DEFINE_FUNCTION_PTR(GetFileAttributesW);
 DEFINE_FUNCTION_PTR(GetFileAttributesExW);
@@ -201,7 +206,6 @@ CreateFileW_hook(
     return CreateFileW_imp(styledPath.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }
 
-#if HOOK_GETFULLPATHNAME
 DWORD
 WINAPI
 GetFullPathNameA_hook(
@@ -216,16 +220,21 @@ GetFullPathNameA_hook(
 #endif
 
     auto styledPath = wsls::makeStyledPath(lpFileName);
-    if (styledPath.empty())
+    if (styledPath.empty()) // path could passing to 
         return GetFullPathNameA_imp(lpFileName, nBufferLength, lpBuffer, lpFilePart);
 
+    if (wsls::hasUNCPrefix(styledPath.c_str()))
+    { // since v3.2 Long path detected and remove unc prefix don't happy
+        styledPath.erase(0, 4); 
+    }
+    
+    // write non unc long path to caller
     int n = ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length() + 1, NULL, 0, NULL, NULL);
     if (nBufferLength > n)
         return ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length() + 1, lpBuffer, nBufferLength, NULL, NULL);
     else
         return n;
 }
-#endif
 
 DWORD
 WINAPI
@@ -286,7 +295,13 @@ void InstallHook()
 {
     wchar_t appName[MAX_PATH * 2+ 1];
     auto hAppModule = GetModuleHandle(nullptr);
-    GetModuleFileNameW(hAppModule, appName, MAX_PATH * 2); // Kernel32.dll --> KernelBase.dll: GetModuleFileNameA --> GetModuleFileNameW
+    GetModuleFileNameW(hAppModule, appName, MAX_PATH * 2); // Kernel32.dll --> KernelBase.dll: GetModuleFileNameA --> GetModuleFileNameW 
+#if defined(_DEBUG)
+    if (wcsstr(appName, DEBUG_MODULE)) {
+        MessageBoxW(nullptr, wsls::sfmt(L"Install patch: wsLongPaths.dll for %s succeed.", appName).c_str(), L"Wating for debugger to attaching...", MB_OK | MB_ICONEXCLAMATION);
+    }
+#endif
+
     // The API CreateProcess call flow
     // Windows 7: kernel32.dll --> ntdll.dll
     // Windows 10: kernel32.dll --> kernelbase.dll --> ntdll.dll
@@ -297,9 +312,7 @@ void InstallHook()
     hModule = GetModuleHandle(L"KernelBase.dll");
     GET_FUNCTION(hModule, CreateFileA);
     GET_FUNCTION(hModule, CreateFileW);
-#if HOOK_GETFULLPATHNAME
     GET_FUNCTION(hModule, GetFullPathNameA);
-#endif
     GET_FUNCTION(hModule, GetFileAttributesW);
     GET_FUNCTION(hModule, GetFileAttributesExW);
     GET_FUNCTION(hModule, FindFirstFileExW);
@@ -310,9 +323,7 @@ void InstallHook()
     HOOK_FUNCTION(CreateProcessW);
     HOOK_FUNCTION(CreateFileA);
     HOOK_FUNCTION(CreateFileW); // _stat64 --> CreateFileW
-#if HOOK_GETFULLPATHNAME
-    HOOK_FUNCTION(GetFullPathNameA);
-#endif
+    HOOK_FUNCTION(GetFullPathNameA); // because the win32 API GetFullPathNameA can't process long path ware, so we need to patch it to fix
     HOOK_FUNCTION(GetFileAttributesW); // GetFileAttributesA --> GetFileAttributesW
     HOOK_FUNCTION(GetFileAttributesExW); // GetFileAttributesEx --> GetFileAttributesExW
     HOOK_FUNCTION(FindFirstFileExW); // FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW
@@ -326,9 +337,4 @@ void InstallHook()
     else {
         s_oringalAppName = s_appName;
     }
-#if defined(_DEBUG)
-    if (wcscmp(s_appName.c_str(), DEBUG_MODULE) == 0) {
-        MessageBoxW(nullptr, wsls::sfmt(L"Install patch: wsLongPaths.dll for %s succeed.", appName).c_str(), L"Wating for debugger to attaching...", MB_OK | MB_ICONEXCLAMATION);
-    }
-#endif
 }

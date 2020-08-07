@@ -1,5 +1,5 @@
 // stdafx.cpp : source file that includes just the standard includes
-// wsls-core.pch will be the pre-compiled header
+// wsls-core.pch will be the pre-compiled header 
 // stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"

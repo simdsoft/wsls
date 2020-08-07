@@ -5,12 +5,6 @@
 #include <Windows.h>
 #include "../libwsls/libwsls.h"
 
-#if defined(_DEBUG)
-#pragma comment(lib, "../x64/Debug/libwsls.lib")
-#else
-#pragma comment(lib, "../x64/Release/libwsls.lib")
-#endif
-
 int main(int /*argc*/, char** /*argv*/)
 {
     // MessageBox(nullptr, L"Waiting for debugger to attach...", L"tips", MB_OK | MB_ICONEXCLAMATION);
