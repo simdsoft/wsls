@@ -61,23 +61,33 @@ rem patching make.exe & cmp.exe
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe gnumake.exe
 call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe
 
-rem patching LLVM
+rem patching LLVM clang
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang++.exe
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" arm-linux-androideabi-ar.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\arm-linux-androideabi\bin" ld.exe
+
+rem patching LLVM for build armv7
+call :InstallPatchForLLVM arm-linux-androideabi
+
+rem patching LLVM for build arm64
+call :InstallPatchForLLVM aarch64-linux-android
 
 rem patching gcc armv7
-call :InstallGccPatch arm-linux-androideabi
+call :InstallPatchForGCC arm-linux-androideabi
 
 rem patching gcc armv8a
-call :InstallGccPatch aarch64-linux-android
+call :InstallPatchForGCC aarch64-linux-android
 
 goto :L_exit
 
+:InstallPatchForLLVM
+set HOST=%1
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ar.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\%HOST%\bin" ld.exe
+goto :eof
+
 rem ----------------------- subprocedure -------------------------------------
 
-:InstallGccPatch
+:InstallPatchForGCC
 set HOST=%1
 call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-g++.exe
 call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-gcc.exe
