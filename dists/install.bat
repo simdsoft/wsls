@@ -1,8 +1,7 @@
 @echo off
 cd /d %~dp0
 
-rem set ndkRoot=%1
-set ndkRoot=D:\dev\adt\android-ndk-r17c
+set ndkRoot=%1
 if not defined ndkRoot set ndkRoot=%ANDROID_NDK%
 
 if not defined ndkRoot echo Please specific ANDROID_NDK! && goto :L_exit
