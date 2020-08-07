@@ -1,12 +1,9 @@
 # wsLongPaths
-This is a generic LongPaths patch for any x64 application which does not support LongPaths.
-
-This patch can make Android ndk r14 or later support LongPaths on windows platform.
-  
-  
+* Purpose: This is a generic LongPaths patch for any x86/x64 application which does not support LongPaths.
+* This patch can make Android ndk r14 or later support LongPaths on windows platform.
   
 # wow64helper
-https://github.com/halx99/wow64helper
+https://github.com/simdsoft/wow64helper
   
 # minhook
 https://github.com/TsudaKageyu/minhook

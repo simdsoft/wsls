@@ -1,4 +1,4 @@
-// Copyright (c) 2017~2018 x-studio365 - All Rights Reserved.
+// Copyright (c) 2017~2020 Simdsoft Limited - All Rights Reserved.
 #include <Windows.h>
 #include <Shlwapi.h>
 #include <ShellAPI.h>
