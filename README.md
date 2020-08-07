@@ -16,5 +16,5 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
   
   
 # So easy to install this patch:  
-1: set env var ANDROID_NDK_ROOT to your ndk-bundle directory  
+1: set env var ANDROID_NDK to your ndk-bundle directory  
 2: right click dists/install.bat, run as administrator.  
