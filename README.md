@@ -12,6 +12,12 @@ https://github.com/TsudaKageyu/minhook
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
   
   
-# So easy to install this patch:  
-1: set env var ANDROID_NDK to your ndk-bundle directory  
-2: right click dists/install.bat, run as administrator.  
+# Install patch for android ndk:  
+1. set env var ANDROID_NDK to your ndk-bundle directory  
+2. right click dists/install.bat, run as administrator.  
+
+# Install patch for android sdk:
+1. Install patch for android ndk first
+2. dists/install-sdk.bat <path\to\sdk> <build-tools-revision>, such as: ```dists/install-sdk.bat d:\dev\adt\sdk 28.0.3```
+
+

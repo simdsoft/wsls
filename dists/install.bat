@@ -1,6 +1,4 @@
-rem 1. Currently, This install script only install patch for android ndk x64 arch tools's .exe.
-rem 2. Some tools of android sdk also need patch, and it's arch is x86, stupid
-rem 3. Futue this script will support install x86
+rem 1. This install script only install patch for android ndk x64 arch tools's .exe.
 @echo off
 cd /d %~dp0
 
