@@ -66,7 +66,7 @@ int main(int argc, char** argv)
                     redirectPath[pathend] = '\0';
 
                     auto styledPath = wsls::makeStyledPath(redirectPath.c_str());
-                    if (styledPath.empty()) styledPath = wsls::transcode$IL(redirectPath.c_str());
+                    if (styledPath.empty()) styledPath = wsls::from_chars(redirectPath.c_str());
 
                     iRet = wsls::mkdir(std::move(styledPath));
                     if (iRet == 0)

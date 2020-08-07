@@ -23,10 +23,10 @@ int main(int /*argc*/, char** /*argv*/)
             return ERROR_OPERATION_ABORTED;
         }
 
-        std::wstring shell = wsls::transcode$IL(wsls::getFileShortName(fileName));
+        std::wstring shell = wsls::from_chars(wsls::getFileShortName(fileName));
 
         strcpy(fileName + n, ".bridge");
-        std::wstring app = wsls::transcode$IL(wsls::readFileData(fileName));
+        std::wstring app = wsls::from_chars(wsls::readFileData(fileName));
         if (app.empty()) // default is the real compile program file name is prefix 'ndk-' 
             app = L"ndk-" + shell;
 

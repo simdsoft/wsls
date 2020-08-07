@@ -2,8 +2,10 @@
 #include <Windows.h>
 #include <string>
 #include <string_view>
+#include "ntcvt.hpp"
 
 namespace wsls {
+using namespace ntcvt;
 /*--- This a C++ universal sprintf in the future.
     **  @pitfall: The behavior of vsnprintf between VS2013 and VS2015/2017 is different
     **      VS2013 or Unix-Like System will return -1 when buffer not enough, but VS2015/2017 will return the actural needed length for buffer at this station
@@ -22,8 +24,6 @@ void convertPathToWinStyle(std::string& path, size_t offset = 0);
 void convertPathToWinStyle(std::wstring& path, size_t offset = 0);
 void convertPathToUnixStyle(std::wstring& path, size_t offset = 0);
 bool isExecFileExist(const wchar_t* _FileName);
-std::wstring transcode$IL(std::string_view mcb, UINT cp = CP_ACP);
-std::string transcode$IL(std::wstring_view mcb, UINT cp = CP_ACP);
 
 std::wstring makeStyledPath(const char* _FileName);
 std::wstring makeStyledPath(const wchar_t* _FileName);

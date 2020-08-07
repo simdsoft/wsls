@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.1.1 2019.12.2 r3
+// version: V3.2 2020.8.7 r1
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -163,15 +163,16 @@ namespace wsls {
     std::string readFileData(const char* fileName)
     {
         std::string data;
-        auto fp = fopen(fileName, "rb");
-        if (fp != nullptr) {
-            fseek(fp, 0, SEEK_END);
-            int n = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
+        HANDLE fileHandle = ::CreateFileW(wsls::from_chars(fileName).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, nullptr);
+        if (fileHandle != INVALID_HANDLE_VALUE) {
+            DWORD hi = 0;
+            auto n = ::GetFileSize(fileHandle, &hi);
             data.resize(n);
-            fread(&data.front(), 1, n, fp);
-            fclose(fp);
-            return data;
+            DWORD sizeRead = 0;
+            BOOL succeed = ::ReadFile(fileHandle, &data.front(), n, &sizeRead, nullptr);
+            if (!succeed)
+                data.resize(0);
+            ::CloseHandle(fileHandle);
         }
         return data;
     }
@@ -180,7 +181,7 @@ namespace wsls {
     {
         auto styledPath = makeStyledPath(fileName);
         if (styledPath.empty()) {
-            styledPath = transcode$IL(fileName);
+            styledPath = wsls::from_chars(fileName);
         }
         HANDLE hFile = CreateFileW(styledPath.c_str(),
             GENERIC_READ | GENERIC_WRITE,
@@ -236,27 +237,6 @@ namespace wsls {
     bool isExecFileExist(const wchar_t* _FileName)
     {
         return true;
-    }
-    std::wstring transcode$IL(std::string_view mcb, UINT cp)
-    {
-        if (!mcb.empty()) {
-            int cchWideChar = MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), NULL, 0);
-            std::wstring buffer(cchWideChar, '\0');
-            MultiByteToWideChar(cp, 0, mcb.data(), static_cast<int>(mcb.length()), &buffer.front(), cchWideChar);
-            return buffer;
-        }
-        return L"";
-    }
-
-    std::string transcode$IL(std::wstring_view wcb, UINT cp)
-    {
-        if (!wcb.empty()) {
-            int cchMultiByte = WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), NULL, 0, NULL, NULL);
-            std::string buffer(cchMultiByte, '\0');
-            WideCharToMultiByte(cp, 0, wcb.data(), static_cast<int>(wcb.length()), &buffer.front(), cchMultiByte, NULL, NULL);
-            return buffer;
-        }
-        return "";
     }
 
     bool isFileExists(const wchar_t* _Path)
@@ -320,7 +300,7 @@ namespace wsls {
         if ((_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD)
             || uncPrefix) // If already prefix, we need to fix path to styled windows path.
         {
-            auto wFileName = transcode$IL(_FileName);
+            auto wFileName = wsls::from_chars(_FileName);
             return makeStyledPathInternal(uncPrefix, wFileName.c_str());
         }
 
@@ -340,7 +320,7 @@ namespace wsls {
     }
 
     template<typename _Elem, typename _Fty> inline
-        void dir_split(_Elem* s, const _Fty& op)
+        void splitpath(_Elem* s, const _Fty& op)
     {
         _Elem* _Start = s; // the start of every string
         _Elem* _Ptr = s;   // source string iterator
@@ -371,7 +351,7 @@ namespace wsls {
     int mkdir(std::wstring&& _Path)
     {
         int error = 0;
-        dir_split(&_Path.front(), [&](const wchar_t* subdir) {
+        splitpath(&_Path.front(), [&](const wchar_t* subdir) {
             if (!isDirectoryExists(subdir))
             {
                 if (!::CreateDirectoryW(subdir, nullptr)) {
