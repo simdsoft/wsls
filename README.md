@@ -2,25 +2,24 @@
 
 [![Release](https://img.shields.io/badge/release-v3.2-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
 
-* Purpose: This is a generic LongPaths patch for any x86/x64 application which does not support LongPaths.
-* This patch can make Android ndk r14 or later support LongPaths on windows platform.
+* Purpose: This patch should make any x86/x64 applications support LongPath on windows 7 x64+
+* Feature: This patch can make Android ndk r14 or later support LongPaths on windows 7 x64+
+
+## Who need this patch?
+* You only want windows, and encounter long path issue on exist software system, such as android ndk,sdk
+* Even win10 provide LongPath ware system config, but still doesn't works for android build system when path to long
+* Some windows systwm command does't support long path even open system LongPath ware config, may windows bug or performance purpose,  
+if you find copy, md, del works with long path on future release of win10, please info me.
   
-# wow64helper
-https://github.com/simdsoft/wow64helper
-  
-# minhook
-https://github.com/TsudaKageyu/minhook
-  
-# Microsoft Long Paths Support document
-https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
-  
-  
-# Install patch for android ndk:  
+## Install patch for android ndk:  
 1. set env var ```ANDROID_NDK``` to your ndk-bundle directory  
 2. right click ```dists/install.bat```, run as administrator.  
 
-# Install patch for android sdk:
+## Install patch for android sdk:
 1. Install patch for android ndk first
 2. ```dists/install-sdk.bat <path\to\sdk> <build-tools-revision>```, such as: ```dists/install-sdk.bat d:\dev\adt\sdk 28.0.3```
 
-
+## References
+* https://github.com/simdsoft/wow64helper
+* https://github.com/TsudaKageyu/minhook
+* https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
