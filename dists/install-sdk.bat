@@ -20,8 +20,7 @@ IF NOT defined buildToolsRevision SET buildToolsRevision=28.0.3
 rem the aidl.exe arch is x86 and not support longpath
 rem modify or add build-tool revisions which you want use in your android project
 call :InstPatch "%sdkRoot%\build-tools\%buildToolsRevision%" aidl.exe
-call :InstPatch "%sdkRoot%\cmake\3.6.4111459\bin" ninja.exe
-call :InstPatch "%sdkRoot%\cmake\3.6.4111459\bin" cmake.exe
+rem call :InstPatch "%sdkRoot%\cmake\3.6.4111459\bin" cmake.exe
 
 goto :L_exit
 
