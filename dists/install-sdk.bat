@@ -46,7 +46,7 @@ echo The patch for %instApp% already installed.
 goto :L_exit
 
 :L_continue
-if not exist "%instDir%\sdk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\sdk-%instApp%"
+if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
 wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
 if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
