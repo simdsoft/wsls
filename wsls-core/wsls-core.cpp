@@ -37,7 +37,7 @@ int main(int /*argc*/, char** /*argv*/)
             app = L"ndk-" + shell; 
 
 #if WSLS_WAIT_DEBUGGER 
-        MessageBox(nullptr, wsls::sfmt(L"%s --> %s", shell, app).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
+        MessageBoxW(nullptr, wsls::sfmt(L"%s --> %s", shell.c_str(), app.c_str()).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
 #endif
         if (!shell.empty() && !app.empty())
             return wsls::make_bridge(shell.c_str(), app.c_str());

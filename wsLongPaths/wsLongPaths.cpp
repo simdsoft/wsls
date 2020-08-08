@@ -13,7 +13,7 @@
 
 #define ENABLE_MSGBOX_TRACE 0
 
-#define DEBUG_MODULE L"aidl.exe"
+#define DEBUG_MODULE L"arm-linux-androideabi-ar.exe"
 
 #if defined(_WIN64)
 #if defined(_DEBUG)
@@ -49,6 +49,32 @@ DEFINE_FUNCTION_PTR(GetFileAttributesA);
 DEFINE_FUNCTION_PTR(GetFileAttributesW);
 DEFINE_FUNCTION_PTR(GetFileAttributesExW);
 DEFINE_FUNCTION_PTR(FindFirstFileExW);
+
+// since v3.3: cmake support
+// ndk-build: use 'md' command to create directory
+// cmake: use CreateDirectoryW API to create directory
+DEFINE_FUNCTION_PTR(CreateDirectoryW);
+
+/// <summary>
+/// since v3.3: crt rename --> wrename --> MoveFileExW(KernelBase.dll)
+/// </summary>
+/// 
+DEFINE_FUNCTION_PTR(MoveFileExW);
+/*
+* // Renames the file named 'old_name' to be named 'new_name'.  Returns zero if
+// successful; returns -1 and sets errno and _doserrno on failure.
+extern "C" int __cdecl _wrename(wchar_t const* const old_name, wchar_t const* const new_name)
+{
+    // The MOVEFILE_COPY_ALLOWED flag alloes moving to a different volume.
+    if (!MoveFileExW(old_name, new_name, MOVEFILE_COPY_ALLOWED))
+    {
+        __acrt_errno_map_os_error(GetLastError());
+        return -1;
+    }
+
+    return 0;
+}
+*/
 
 static std::wstring s_appName;
 static std::wstring s_oringalAppName;
@@ -206,6 +232,44 @@ CreateFileW_hook(
     return CreateFileW_imp(styledPath.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }
 
+BOOL
+WINAPI
+CreateDirectoryW_hook(
+    _In_ LPCWSTR lpPathName,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+) 
+{
+    auto styledPath = wsls::makeStyledPath(lpPathName);
+    if (styledPath.empty())
+        return CreateDirectoryW_imp(lpPathName, lpSecurityAttributes);
+    return CreateDirectoryW_imp(styledPath.c_str(), lpSecurityAttributes);
+}
+
+BOOL
+WINAPI
+MoveFileExW_hook(
+    _In_     LPCWSTR lpExistingFileName,
+    _In_opt_ LPCWSTR lpNewFileName,
+    _In_     DWORD    dwFlags
+)
+{
+    auto styledPath = wsls::makeStyledPath(lpExistingFileName);
+
+    auto fileName = PathFindFileNameW(lpNewFileName);
+
+    std::wstring newFilePath;
+    if (fileName)
+    {
+        newFilePath.assign(lpNewFileName, fileName - lpNewFileName);
+        auto tmpDir = wsls::makeStyledPath(newFilePath.c_str());
+        if (!tmpDir.empty()) newFilePath.swap(tmpDir);
+        newFilePath += fileName;
+    }
+    
+    return MoveFileExW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
+        newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
+}
+
 DWORD
 WINAPI
 GetFullPathNameA_hook(
@@ -302,6 +366,11 @@ void InstallHook()
     }
 #endif
 
+#if defined(_DEBUG)
+    wchar_t currentDirectory[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, currentDirectory);
+#endif
+
     // The API CreateProcess call flow
     // Windows 7: kernel32.dll --> ntdll.dll
     // Windows 10: kernel32.dll --> kernelbase.dll --> ntdll.dll
@@ -317,6 +386,10 @@ void InstallHook()
     GET_FUNCTION(hModule, GetFileAttributesExW);
     GET_FUNCTION(hModule, FindFirstFileExW);
 
+    // kernel32.dll --> KernelBase.dll --> ntdll.dll
+    GET_FUNCTION(hModule, CreateDirectoryW);
+    GET_FUNCTION(hModule, MoveFileExW);
+
     MH_Initialize();
 
     HOOK_FUNCTION(CreateProcessA);
@@ -327,6 +400,8 @@ void InstallHook()
     HOOK_FUNCTION(GetFileAttributesW); // GetFileAttributesA --> GetFileAttributesW
     HOOK_FUNCTION(GetFileAttributesExW); // GetFileAttributesEx --> GetFileAttributesExW
     HOOK_FUNCTION(FindFirstFileExW); // FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW
+    HOOK_FUNCTION(CreateDirectoryW); // CreateDirectorA --> CreateDirectoryW --> NtCreateFile
+    HOOK_FUNCTION(MoveFileExW);
 
     MH_EnableHook(MH_ALL_HOOKS);
 

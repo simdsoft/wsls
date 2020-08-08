@@ -14,8 +14,8 @@ using namespace ntcvt;
     */
 std::string sfmt(const char* format, ...);
 std::wstring sfmt(const wchar_t* format, ...);
-bool replace_once(std::string& string, const std::string& replaced_key, const std::string& replacing_key);
-bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
+bool replace_once(std::string& string, const std::string& replaced_key, const std::string& replacing_key, size_t offset = 0);
+bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key, size_t offset = 0);
 int replace(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
 int make_bridge(const wchar_t* shell, const wchar_t* app);
 std::string readFileData(const char* fileName);
@@ -30,7 +30,13 @@ std::wstring makeStyledPath(const wchar_t* _FileName);
 
 bool isFileExists(const wchar_t* _Path);
 bool isDirectoryExists(const wchar_t* _Path);
-bool isAbsolutePath(const wchar_t* strPath);
+template<typename _Elem> inline
+bool isAbsolutePath(const _Elem* strPath)
+{
+    return (((strPath[0] >= 'a' && strPath[0] <= 'z') || (strPath[0] >= 'A' && strPath[0] <= 'Z'))
+        && strPath[1] == ':');
+}
+
 const char* getFileShortName(std::string_view _FileName);
 
 int mkdir(std::wstring&& _Path);

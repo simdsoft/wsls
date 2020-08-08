@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.2 2020.8.7 r5
+// version: V3.2 2020.8.8 r1
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -108,9 +108,9 @@ namespace wsls {
         return buffer;
     }
 
-    bool replace_once(std::string& string, const std::string& replaced_key, const std::string& replacing_key)
+    bool replace_once(std::string& string, const std::string& replaced_key, const std::string& replacing_key, size_t offset)
     {
-        std::string::size_type pos = 0;
+        std::string::size_type pos = offset;
         if ((pos = string.find(replaced_key, pos)) != std::string::npos)
         {
             (void)string.replace(pos, replaced_key.length(), replacing_key);
@@ -119,9 +119,9 @@ namespace wsls {
         return false;
     }
 
-    bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key)
+    bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key, size_t offset)
     {
-        std::wstring::size_type pos = 0;
+        std::wstring::size_type pos = offset;
         if ((pos = string.find(replaced_key, pos)) != std::wstring::npos)
         {
             (void)string.replace(pos, replaced_key.length(), replacing_key);
@@ -143,9 +143,16 @@ namespace wsls {
         return count;
     }
 
+    /// <summary>
+    /// Replacing command at runtime to app wich has the real functionality
+    /// </summary>
+    /// <param name="what">The command line</param>
+    /// <param name="shell">the shell app for build system invoke</param>
+    /// <param name="app">the redirect app which has the real functionality, make ndk-xxx.exe or different with shell, such as gnumake.exe</param>
+    /// <returns></returns>
     static bool do_replace(std::wstring& what, const wchar_t* shell, const wchar_t* app)
     {
-        if (!replace(what, shell, app)) {
+        /*if (!replace(what, shell, app)) {
             auto shellExtension = PathFindExtension(shell);
             auto appExtension = PathFindExtension(app);
             if (shellExtension[0] != '\0' && appExtension[0] != '\0')
@@ -157,7 +164,26 @@ namespace wsls {
                 }
             }
         }
-        return true;
+        return true;*/
+
+        auto shellExtension = PathFindExtension(shell);
+        auto appExtension = PathFindExtension(app);
+        if (*shellExtension && *appExtension)
+        {
+            // auto origExtension = PathFindExtension(what.c_str());
+            std::wstring wshell(shell, shellExtension - shell); // with out extension
+            std::wstring wapp(app, appExtension - app); // with out extension
+      
+            auto offset = what.find_last_of(L"\\/");
+            if (offset != std::wstring::npos) {
+                return replace_once(what, wshell, wapp, offset + 1);
+            }
+
+            // No path
+            return replace_once(what, wshell, wapp);
+        }
+
+        return false;
     }
 
     std::string readFileData(const char* fileName)
@@ -250,13 +276,7 @@ namespace wsls {
         auto attr = ::GetFileAttributesW(_Path);
         return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
     }
-
-    bool isAbsolutePath(const wchar_t* strPath)
-    {
-        return (((strPath[0] >= 'a' && strPath[0] <= 'z') || (strPath[0] >= 'A' && strPath[0] <= 'Z'))
-            && strPath[1] == ':');
-    }
-
+   
     const char* getFileShortName(std::string_view _FileName)
     {
         auto slash = _FileName.find_last_of("/\\");
@@ -265,21 +285,26 @@ namespace wsls {
         return !_FileName.empty() ? _FileName.data() : "";
     }
 
-    static  std::wstring makeStyledPathInternal(bool uncPrefix, const wchar_t* _FileName)
+    static std::wstring makeStyledPathInternal(bool uncPrefix, const wchar_t* _FileName, bool forFullPath)
     { /*
       clang 5.0.2
       android-ndk-r16b clang 5.0.300080
       will simply add prefix R"(\\?\)" for too long path,
       but it's not ok, we should convert it to windows styled path for windows File APIs happy.
       */
-        if (!uncPrefix || !isStyledWindowsPath(_FileName + UNC_PREFIX_LEN)) {
+        if (!uncPrefix || !isStyledWindowsPath(_FileName + UNC_PREFIX_LEN) || forFullPath) {
             size_t offset = UNC_PREFIX_LEN;
             if (uncPrefix) offset = 0;
 
             int nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
             if (nBufferLength > 0) {
-                std::wstring uncPath(nBufferLength + offset, '\0');
-                memcpy(&uncPath.front(), UNC_PREFIXW, offset << 1);
+                if (nBufferLength <= LONG_PATH_THRESHOLD)
+                    offset = 0;
+
+                std::wstring uncPath(nBufferLength + offset - 1, '\0');
+
+                if(offset)
+                    memcpy(&uncPath.front(), UNC_PREFIXW, offset << 1);
 
                 if (GetFullPathNameW(_FileName, nBufferLength, &uncPath.front() + offset, nullptr) < nBufferLength)
                 {
@@ -300,8 +325,10 @@ namespace wsls {
         if ((_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD)
             || uncPrefix) // If already prefix, we need to fix path to styled windows path.
         {
-            auto wFileName = wsls::from_chars(_FileName);
-            return makeStyledPathInternal(uncPrefix, wFileName.c_str());
+            return makeStyledPathInternal(uncPrefix, wsls::from_chars(_FileName).c_str(), false);
+        }
+        else if (!isAbsolutePath(_FileName)) {
+            return makeStyledPathInternal(uncPrefix, wsls::from_chars(_FileName).c_str(), true);
         }
 
         return L"";
@@ -313,7 +340,10 @@ namespace wsls {
         if ((_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD)
             || uncPrefix) // If already prefix, we need to fix path to styled windows path.
         {
-            return makeStyledPathInternal(uncPrefix, _FileName);
+            return makeStyledPathInternal(uncPrefix, _FileName, false);
+        }
+        else if (!isAbsolutePath(_FileName)) { // fix issue with relativePath
+            return makeStyledPathInternal(uncPrefix, _FileName, true);
         }
 
         return L"";
@@ -429,7 +459,7 @@ namespace wsls {
         );
 
         if (!succeed) {
-            wprintf(L"make bridge failed %s --> %s, create original process failed!", shell, app);
+            wprintf(L"make bridge failed %s --> %s, create original process failed, ec=%u", shell, app, GetLastError());
             return GetLastError();
         }
 
