@@ -82,6 +82,8 @@ goto :L_exit
 :InstallPatchForLLVM
 set HOST=%1
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ar.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ld.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ranlib.exe
 call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\%HOST%\bin" ld.exe
 goto :eof
 
@@ -113,20 +115,18 @@ echo Installing patch for %instApp%...
 
 if defined rediretApp wsls-copy %arch%\%rediretApp% "%instDir%\%rediretApp%"
 
-fc wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
+fc %arch%\wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
 if not %errorlevel%==0 goto :L_continue
 
 echo The patch for %instApp% already installed.
 goto :L_exit
 
 :L_continue
+rem make a copy of original xxx.exe to ndk-xxx.exe
 if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
 wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
 if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
-
-rem wsls-copy %arch%\wow64helper.exe "%instDir%\wow64helper.exe"
-rem wsls-copy %arch%\wsLongPaths.dll "%instDir%\wsLongPaths.dll"
 
 echo Installing patch for %instApp% succeed.
 goto :eof
