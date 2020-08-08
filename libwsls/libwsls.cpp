@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.2 2020.8.8 r1
+// version: V3.3 2020.8.8 r23
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
