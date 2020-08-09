@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <Windows.h>
-#include "../libwsls/libwsls.h"
+#include "../libwsls/ntcvt.hpp"
 
 enum {
     IMAGE_ARCH_UNKNOWN,
@@ -65,25 +65,12 @@ static int detectExeArch(const std::wstring& filePath) {
         return IMAGE_ARCH_X64;
     }
     else return IMAGE_ARCH_UNKNOWN;
-
-    //if (IMAGE_SUBSYSTEM_WINDOWS_GUI == pImage_Optional_Header->Subsystem)
-    //{
-    //    //vlog::logd("WINDOWS_GUI APP \n");
-    //}
-    //if (IMAGE_SUBSYSTEM_WINDOWS_CUI == pImage_Optional_Header->Subsystem)
-    //{
-    //    //vlog::logd("WINDOWS_CUI APP \n");
-    //}
-    //return bX86;
 }
 
 int main(int argc, char** argv)
 {
     if (argc >= 2) {
-        auto uncPath = wsls::makeStyledPath(argv[1]);
-        if (uncPath.empty())
-            uncPath = wsls::from_chars(argv[1]);
-        return detectExeArch(uncPath);
+        return detectExeArch(ntcvt::from_chars(argv[1]));
     }
     return -1;
 }

@@ -152,20 +152,6 @@ namespace wsls {
     /// <returns></returns>
     static bool do_replace(std::wstring& what, const wchar_t* shell, const wchar_t* app)
     {
-        /*if (!replace(what, shell, app)) {
-            auto shellExtension = PathFindExtension(shell);
-            auto appExtension = PathFindExtension(app);
-            if (shellExtension[0] != '\0' && appExtension[0] != '\0')
-            {
-                std::wstring wshell(shell, shellExtension - shell);
-                if (!replace(what, wshell, app))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;*/
-
         auto shellExtension = PathFindExtension(shell);
         auto appExtension = PathFindExtension(app);
         if (*shellExtension && *appExtension)
