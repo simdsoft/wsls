@@ -1,20 +1,32 @@
-rem 1. This install script only install patch for android ndk x64 arch tools's .exe.
+rem 1. This install script only install patch for android ndk x64 arch tools's .exe
 @echo off
 cd /d %~dp0
 
-set arch=x64
-
 set ndkRoot=%1
 if not defined ndkRoot set ndkRoot=%ANDROID_NDK%
-
 if not defined ndkRoot echo Please specific ANDROID_NDK! && goto :L_exit
+if not exist %ndkRoot% echo No valid ANDROID_NDK directory specificed! && goto :L_exit
 
-if not exist %ndkRoot% echo The directory not exist! && goto :L_exit
+set sdkRoot=%2
+if not defined sdkRoot set sdkRoot=%ANDROID_SDK%
+if not defined sdkRoot echo Please specific ANDROID_SDK!
+if not exist %sdkRoot% echo No valid ANDROID_SDK directory specificed! & set sdkRoot=
+
+echo ndkRoot=%ndkRoot%
+echo sdkRoot=%sdkRoot%
 
 rem Cleanup old version stubs
 del /s /f /q "%ndkRoot%\*.bridge" 2>nul
 del /s /f /q "%ndkRoot%\*wsLongPaths.dll" 2>nul
 del /s /f /q "%ndkRoot%\*wow64helper.exe" 2>nul
+
+set X86HASH=
+set X64HASH=
+for /f "delims=" %%i in ('wsls-hash "x86/wsls-core.exe"') do set X86HASH=%%i
+for /f "delims=" %%i in ('wsls-hash "x64/wsls-core.exe"') do set X64HASH=%%i
+
+echo X86HASH=%X86HASH%
+echo X64HASH=%X64HASH%
 
 rem Install wsls core binaires
 if exist %WINDIR%\SysWow64\ (
@@ -49,21 +61,19 @@ for /f "tokens=1,2* delims=." %%i in ("%ndkVer%") do set ndkMajorVer=%%i
 
 echo Android NDK major version is: %ndkMajorVer%
 
-rem TODO:
-rem set sdkRoot=d:\dev\adt\sdk
-rem call :InstPatch "%sdkRoot%\build-tools\28.0.3" aidl.exe
-rem goto :L_exit
-
 rem patching echo
 wsls-copy %arch%\wsls-echo.exe "%ndkRoot%\prebuilt\windows-x86_64\bin\wsls-echo.exe"
 
+rem clear errorlevel before starting install patch
+set errorlevel=
+
 rem patching make.exe & cmp.exe
-call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe gnumake.exe
-call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe
+call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" make.exe x64 gnumake.exe
+call :InstPatch "%ndkRoot%\prebuilt\windows-x86_64\bin" cmp.exe x64
 
 rem patching LLVM clang
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang++.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang.exe
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang++.exe x64
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" clang.exe x64
 
 rem patching LLVM for build armv7
 call :InstallPatchForLLVM arm-linux-androideabi
@@ -77,60 +87,121 @@ call :InstallPatchForGCC arm-linux-androideabi
 rem patching gcc armv8a
 call :InstallPatchForGCC aarch64-linux-android
 
-goto :L_exit
+rem patching android sdk tools
+if defined sdkRoot call :InstallPatchForSdkTools
 
-:InstallPatchForLLVM
-set HOST=%1
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ar.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ld.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ranlib.exe
-call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\%HOST%\bin" ld.exe
+rem exit install.bat script
+:L_exit
+echo Exiting install.bat...&ping /n 2 127.0.1 >nul
 goto :eof
 
-rem ----------------------- subprocedure -------------------------------------
+rem ---------------- the InstallPatchForSdkTools subprocedure ------------
+:InstallPatchForSdkTools
+
+rem -- cmake
+FOR /f "delims=" %%i IN ('dir "%sdkRoot%\cmake" /ad /b') DO (
+  for /f "delims=" %%j in ('dir "%sdkRoot%\cmake\%%i\bin" /a-d /b ^| findstr /v "ndk-"') do (
+    call :InstPatch "%sdkRoot%\cmake\%%i\bin" %%j
+  )
+)
+
+rem -- build-tools aidl.exe
+FOR /f "delims=" %%i IN ('dir "%sdkRoot%\build-tools" /ad /b') DO (
+  call :InstPatch "%sdkRoot%\build-tools\%%i" aidl.exe
+)
+
+goto :eof
+
+rem ---------------- the InstallPatchForLLVM subprocedure ------------
+:InstallPatchForLLVM
+set HOST=%1
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ar.exe x64
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ld.exe x64
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\bin" %HOST%-ranlib.exe x64
+call :InstPatch "%ndkRoot%\toolchains\llvm\prebuilt\windows-x86_64\%HOST%\bin" ld.exe x64
+goto :eof
+
+
+rem ---------------- the InstallPatchForGCC subprocedure ------------
 
 :InstallPatchForGCC
 set HOST=%1
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-g++.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-gcc.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-ar.exe
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-g++.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-gcc.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\bin" %HOST%-ar.exe x64
 
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" ld.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" as.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" ar.exe
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" ld.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" as.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\%HOST%\bin" ar.exe x64
 
 rem skip libexec when ndk > 17, since ndk-r18, libexec removed
 if %ndkMajorVer% GTR 17 goto :eof
 
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" cc1.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" cc1plus.exe
-call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" collect2.exe
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" cc1.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" cc1plus.exe x64
+call :InstPatch "%ndkRoot%\toolchains\%HOST%-4.9\prebuilt\windows-x86_64\libexec\gcc\%HOST%\4.9.x" collect2.exe x64
 goto :eof
 
+rem --------------------- the InstalPatch subprocedure ----------------
 :InstPatch
 set instDir=%1
 set instApp=%2
-set rediretApp=%3
+set arch=%3
+set redApp=%4
+
+
+rem -------- check parameters ------
+
+rem -- clear parameter value if nil
+if "%arch%"=="nil" set arch=
+if "%redApp%"=="nil" set redApp=
+
+rem if not defined arch detect it auto
+setlocal ENABLEDELAYEDEXPANSION
+set errorlevel=
+if not defined arch (
+  call wsls-arch.exe "%instDir%\%instApp%"
+  if !errorlevel! GTR 0 set arch=x!errorlevel!
+)
+set errorlevel=
+setlocal DISABLEDELAYEDEXPANSION
+
+if not "%arch%"=="x86" (
+  if not "%arch%"=="x64" (
+    echo Skipping target %instDir%\%instApp% with arch '%arch%', valid arch list: x86,x64  && goto :eof
+  )
+)
+
+rem -- print parameters
+rem echo instDir="%instDir%"
+rem echo instApp="%instApp%"
+rem echo arch="%arch%"
+rem echo redApp="%redApp%"
+
+set instHash=
+for /f "delims=" %%i in ('wsls-hash "%instDir%\%instApp%"') do set instHash=%%i
+
+if "%arch%"=="x64" (
+  if "%instHash%"=="%X64HASH%" goto :L_installed
+) else (
+  if "%instHash%"=="%X86HASH%" goto :L_installed
+)
+
 echo Installing patch for %instApp%...
 
-if defined rediretApp wsls-copy %arch%\%rediretApp% "%instDir%\%rediretApp%"
+rem custom such as gnumake.exe
+if defined redApp wsls-copy %arch%\%redApp% "%instDir%\%redApp%"
 
-fc %arch%\wsls-core.exe "%instDir%\%instApp%" 1>nul 2>nul
-if not %errorlevel%==0 goto :L_continue
-
-echo The patch for %instApp% already installed.
-goto :L_exit
-
-:L_continue
+rem --- perform install
 rem make a copy of original xxx.exe to ndk-xxx.exe
 if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
 wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
 if exist %arch%\%instApp%.bridge wsls-copy %arch%\%instApp%.bridge "%instDir%\%instApp%.bridge"
 
-echo Installing patch for %instApp% succeed.
+echo Installing patch for %instApp%(%arch%) succeed.
 goto :eof
 
-:L_exit
-ping /n 3 127.0.1 >nul
+:L_installed
+echo The patch for %instApp%(%arch%) already installed.
 goto :eof

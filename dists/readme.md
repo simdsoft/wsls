@@ -1,4 +1,4 @@
-* Revision: 3.3
+* Revision: 3.3.1
 * Project url: https://github.com/halx99/wsLongPaths
 * gnumake.exe: build from http://ftp.gnu.org/gnu/make/ 4.3
 * Requirement: Visual Studio 2019 Redist (x86) and (x64) required, can be download at: https://dl.x-studio.net/
@@ -8,5 +8,4 @@
   * build_x86.bat: can build x86 with vs2019, call build.bat
 
 * android-ndk: should use x64
-* android-sdk: will have x86 tool, such as aidl.exe in build-tools/{revision}/aidl.exe also doesn't support Long Path, so you need  
-use install-sdk.bat to install patch for aidl.exe of specific build-tools revision
+* android-sdk: will have x86 tool, such as aidl.exe in build-tools/{revision}/aidl.exe also doesn't support Long Path

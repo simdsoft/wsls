@@ -1,6 +1,6 @@
 # wsLongPaths
 
-[![Release](https://img.shields.io/badge/release-v3.3-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
+[![Release](https://img.shields.io/badge/release-v3.3.1-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on windows 7 x64+
 * Feature: This patch can make Android ndk r14 or later support LongPaths on windows 7 x64+
@@ -18,9 +18,9 @@
 if you find copy, md, del works with long path on future release of win10, please info me.
   
 ## Install patch for android ndk & sdk:  
-1. Set env var ```ANDROID_NDK``` to your ndk-bundle directory  
-2. Install ndk: right click ```dists/install.bat```, run as administrator.  
-3. After ndk installed, install sdk: ```dists/install-sdk.bat <path\to\sdk> <build-tools-revision>```, such as: ```dists/install-sdk.bat d:\dev\adt\sdk 28.0.3```
+1. Set env var ```ANDROID_NDK``` to your android ndk root directory  
+2. Set env var ```ANDROID_SDK``` to your android sdk root directory  
+3. Install ndk: right click ```dists/install.bat```, run as administrator.  
 
 ## References
 * https://github.com/simdsoft/wow64helper
