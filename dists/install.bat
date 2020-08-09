@@ -1,4 +1,4 @@
-@rem This script install patch for android ndk(x64) and android sdk tools's .exe
+@rem v3.3.3 This script install patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 cd /d %~dp0
 
@@ -61,7 +61,7 @@ for /f "tokens=1,2* delims=." %%i in ("%ndkVer%") do set ndkMajorVer=%%i
 echo Android NDK major version is: %ndkMajorVer%
 
 rem patching echo
-wsls-copy %arch%\wsls-echo.exe "%ndkRoot%\prebuilt\windows-x86_64\bin\wsls-echo.exe"
+wsls-copy x64\wsls-echo.exe "%ndkRoot%\prebuilt\windows-x86_64\bin\wsls-echo.exe"
 
 rem clear errorlevel before starting install patch
 set errorlevel=
