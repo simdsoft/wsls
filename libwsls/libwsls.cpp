@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.3 2020.8.8 r23
+// version: V3.3.1 2020.8.9 r1
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -13,7 +13,7 @@
 #define UNC_PREFIXW L"\\\\?\\"
 
 // pitfall: CRT file APIs will may failed with > 248, so we subtract 15 to make CRT happy.
-#define LONG_PATH_THRESHOLD (MAX_PATH - 12 - 15) 
+#define SHORT_PATH_THRESHOLD (MAX_PATH - 12 - 15) 
 
 static const size_t UNC_PREFIX_LEN = sizeof(UNC_PREFIX) - 1;
 
@@ -282,17 +282,17 @@ namespace wsls {
             size_t offset = UNC_PREFIX_LEN;
             if (uncPrefix) offset = 0;
 
-            int nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
+            auto nBufferLength = GetFullPathNameW(_FileName, 0, nullptr, nullptr);
             if (nBufferLength > 0) {
-                if (nBufferLength <= LONG_PATH_THRESHOLD)
-                    offset = 0;
+                if (nBufferLength <= SHORT_PATH_THRESHOLD) offset = 0;
 
                 std::wstring uncPath(nBufferLength + offset - 1, '\0');
 
                 if(offset)
                     memcpy(&uncPath.front(), UNC_PREFIXW, offset << 1);
 
-                if (GetFullPathNameW(_FileName, nBufferLength, &uncPath.front() + offset, nullptr) < nBufferLength)
+                auto cch = GetFullPathNameW(_FileName, nBufferLength, &uncPath.front() + offset, nullptr);
+                if (cch < nBufferLength)
                 {
 #if defined(_DEBUG)
                     _wsystem(sfmt(LR"(echo "wsLongPath.dll: convert NON-UNC long path to UNC Path: %s")", uncPath.c_str()).c_str());
@@ -308,7 +308,7 @@ namespace wsls {
     std::wstring makeStyledPath(const char* _FileName) 
     {
         bool uncPrefix = hasUNCPrefix(_FileName);
-        if ((_FileName != nullptr && strlen(_FileName) > LONG_PATH_THRESHOLD)
+        if ((_FileName != nullptr && strlen(_FileName) > SHORT_PATH_THRESHOLD)
             || uncPrefix) // If already prefix, we need to fix path to styled windows path.
         {
             return makeStyledPathInternal(uncPrefix, wsls::from_chars(_FileName).c_str(), false);
@@ -323,7 +323,7 @@ namespace wsls {
     std::wstring makeStyledPath(const wchar_t* _FileName)
     {
         bool uncPrefix = hasUNCPrefix(_FileName);
-        if ((_FileName != nullptr && wcslen(_FileName) > LONG_PATH_THRESHOLD)
+        if ((_FileName != nullptr && wcslen(_FileName) > SHORT_PATH_THRESHOLD)
             || uncPrefix) // If already prefix, we need to fix path to styled windows path.
         {
             return makeStyledPathInternal(uncPrefix, _FileName, false);

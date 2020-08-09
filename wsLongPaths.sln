@@ -1,15 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27705.2000
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30330.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wow64helper", "wow64helper\wow64helper.vcxproj", "{4541A331-883F-4F2E-870C-CC934FD230FE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsLongPaths", "wsLongPaths\wsLongPaths.vcxproj", "{251C5D3B-964A-4208-A32C-C0218E24F3BA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F142A341-5EE0-442D-A15F-98AE9B48DBAE} = {F142A341-5EE0-442D-A15F-98AE9B48DBAE}
-		{4E8F6050-25B4-4B25-9C03-0F670D35E9A7} = {4E8F6050-25B4-4B25-9C03-0F670D35E9A7}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libMinHook", "minhook\build\VC15\libMinHook.vcxproj", "{F142A341-5EE0-442D-A15F-98AE9B48DBAE}"
 EndProject
@@ -26,9 +22,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{FE31055E-1CE4-4C51-AA64-B67E2B7A81A6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-core", "wsls-core\wsls-core.vcxproj", "{9576C26A-8F28-4B4F-8D8C-92EE4CFEBE5E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4E8F6050-25B4-4B25-9C03-0F670D35E9A7} = {4E8F6050-25B4-4B25-9C03-0F670D35E9A7}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{AE9909AA-51BF-401E-A3B0-966A587CD1C0}"
 EndProject
@@ -37,6 +30,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-md", "wsls-md\wsls-md.vcxproj", "{9BF72423-717F-4889-A81E-7336F7A5AFAE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-echo", "wsls-echo\wsls-echo.vcxproj", "{31930FB3-9764-49B8-BE95-0403F9E5DEAC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-arch", "wsls-arch\wsls-arch.vcxproj", "{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{01E19DC9-A553-4BDF-A944-B2036204203A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wsls-hash", "wsls-hash\wsls-hash.vcxproj", "{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +125,22 @@ Global
 		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x64.Build.0 = Release|x64
 		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x86.ActiveCfg = Release|Win32
 		{31930FB3-9764-49B8-BE95-0403F9E5DEAC}.Release|x86.Build.0 = Release|Win32
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Debug|x64.ActiveCfg = Debug|x64
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Debug|x64.Build.0 = Debug|x64
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Debug|x86.ActiveCfg = Debug|Win32
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Debug|x86.Build.0 = Debug|Win32
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Release|x64.ActiveCfg = Release|x64
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Release|x64.Build.0 = Release|x64
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Release|x86.ActiveCfg = Release|Win32
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC}.Release|x86.Build.0 = Release|Win32
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Debug|x64.ActiveCfg = Debug|x64
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Debug|x64.Build.0 = Debug|x64
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Debug|x86.ActiveCfg = Debug|Win32
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Debug|x86.Build.0 = Debug|Win32
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Release|x64.ActiveCfg = Release|x64
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Release|x64.Build.0 = Release|x64
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Release|x86.ActiveCfg = Release|Win32
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,6 +156,8 @@ Global
 		{AE9909AA-51BF-401E-A3B0-966A587CD1C0} = {4E34C083-A6FF-4128-90B2-D2A6E1E3575B}
 		{9BF72423-717F-4889-A81E-7336F7A5AFAE} = {13C90FA4-3E91-4004-9144-DE4410E632D1}
 		{31930FB3-9764-49B8-BE95-0403F9E5DEAC} = {13C90FA4-3E91-4004-9144-DE4410E632D1}
+		{24FE6B75-1740-4806-9F5E-91B5E0CC10CC} = {01E19DC9-A553-4BDF-A944-B2036204203A}
+		{54AAF9F1-0B99-4D99-8BB3-28F19858CBB6} = {01E19DC9-A553-4BDF-A944-B2036204203A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B89B0A9-AD53-43DC-8B3E-5BDEBC39FFEE}

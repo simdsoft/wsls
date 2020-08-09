@@ -49,6 +49,7 @@ DEFINE_FUNCTION_PTR(GetFileAttributesA);
 DEFINE_FUNCTION_PTR(GetFileAttributesW);
 DEFINE_FUNCTION_PTR(GetFileAttributesExW);
 DEFINE_FUNCTION_PTR(FindFirstFileExW);
+DEFINE_FUNCTION_PTR(DeleteFileW);
 
 // since v3.3: cmake support
 // ndk-build: use 'md' command to create directory
@@ -56,10 +57,12 @@ DEFINE_FUNCTION_PTR(FindFirstFileExW);
 DEFINE_FUNCTION_PTR(CreateDirectoryW);
 
 /// <summary>
-/// since v3.3: crt rename --> wrename --> MoveFileExW(KernelBase.dll)
+/// since v3.3: crt rename --> wrename --> MoveFileExW(KernelBase.dll) --> MoveFileWithProgressW
+/// msvcrt --> MoveFileA --> MoveFileWithProgressW
 /// </summary>
 /// 
-DEFINE_FUNCTION_PTR(MoveFileExW);
+DEFINE_FUNCTION_PTR(MoveFileWithProgressW);
+DEFINE_FUNCTION_PTR(SetFileInformationByHandle);
 /*
 * // Renames the file named 'old_name' to be named 'new_name'.  Returns zero if
 // successful; returns -1 and sets errno and _doserrno on failure.
@@ -247,27 +250,71 @@ CreateDirectoryW_hook(
 
 BOOL
 WINAPI
-MoveFileExW_hook(
-    _In_     LPCWSTR lpExistingFileName,
-    _In_opt_ LPCWSTR lpNewFileName,
-    _In_     DWORD    dwFlags
+DeleteFileW_hook(
+    _In_ LPCWSTR lpFileName
 )
 {
-    auto styledPath = wsls::makeStyledPath(lpExistingFileName);
+    auto styledPath = wsls::makeStyledPath(lpFileName);
+    return DeleteFileW_imp(styledPath.empty() ? lpFileName : styledPath.c_str());
+}
 
-    auto fileName = PathFindFileNameW(lpNewFileName);
-
-    std::wstring newFilePath;
-    if (fileName)
+// Old revision of ndk will use msvcrt.dll rename --> call SetFileInformationByHandle to rename file
+BOOL
+WINAPI
+SetFileInformationByHandle_hook(
+    _In_ HANDLE hFile,
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _In_reads_bytes_(dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize
+)
+{
+    if (FileInformationClass == FileRenameInfo) 
     {
-        newFilePath.assign(lpNewFileName, fileName - lpNewFileName);
-        auto tmpDir = wsls::makeStyledPath(newFilePath.c_str());
-        if (!tmpDir.empty()) newFilePath.swap(tmpDir);
-        newFilePath += fileName;
+        FILE_RENAME_INFO* pInfo = (FILE_RENAME_INFO*)lpFileInformation;
+        FILE_RENAME_INFO* pInfoNew = nullptr;
+        auto styledPath = wsls::makeStyledPath(pInfo->FileName);
+        if (!styledPath.empty()) {
+            pInfoNew = (FILE_RENAME_INFO*)malloc(sizeof(FILE_RENAME_INFO) + (styledPath.length() + 1) * 2);
+            memcpy(pInfoNew, pInfo, sizeof(FILE_RENAME_INFO));
+            pInfoNew->FileNameLength = styledPath.length();
+            // lstrcpyW(&pInfoNew->FileName[0], styledPath.c_str());
+            memcpy(&pInfoNew->FileName[0], styledPath.c_str(), (styledPath.length() + 1) * 2);
+        }
+
+        BOOL bRet = SetFileInformationByHandle_imp(hFile, FileInformationClass, pInfoNew == nullptr ? lpFileInformation : pInfoNew, dwBufferSize);
+        if (pInfoNew) free(pInfoNew);
+        return bRet;
     }
     
-    return MoveFileExW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
-        newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
+    return SetFileInformationByHandle_imp(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
+}
+
+// All of MoveFileA/W, MoveFileExA/W will call MoveFileWithProgressW
+// workaround is MoveFileA
+BOOL
+WINAPI
+MoveFileWithProgressW_hook(
+    _In_     LPCWSTR lpExistingFileName,
+    _In_opt_ LPCWSTR lpNewFileName,
+    _In_opt_ LPPROGRESS_ROUTINE lpProgressRoutine,
+    _In_opt_ LPVOID lpData,
+    _In_     DWORD dwFlags
+)
+{
+     auto styledPath = wsls::makeStyledPath(lpExistingFileName);
+ 
+     auto fileName = PathFindFileNameW(lpNewFileName);
+     std::wstring newFilePath;
+     if (fileName)
+     {
+         newFilePath.assign(lpNewFileName, fileName - lpNewFileName);
+         auto tmpDir = wsls::makeStyledPath(newFilePath.c_str());
+         if (!tmpDir.empty()) newFilePath.swap(tmpDir);
+         newFilePath += fileName;
+     }
+     
+     return MoveFileWithProgressW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
+         newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), lpProgressRoutine, lpData, dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
 }
 
 DWORD
@@ -293,11 +340,11 @@ GetFullPathNameA_hook(
     }
     
     // write non unc long path to caller
-    int n = ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length() + 1, NULL, 0, NULL, NULL);
-    if (nBufferLength > n)
-        return ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length() + 1, lpBuffer, nBufferLength, NULL, NULL);
+    int cch = ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length(), NULL, 0, NULL, NULL);
+    if (nBufferLength > cch)
+        return ::WideCharToMultiByte(CP_ACP, 0, styledPath.c_str(), styledPath.length(), lpBuffer, nBufferLength, NULL, NULL);
     else
-        return n;
+        return cch + 1;
 }
 
 DWORD
@@ -388,7 +435,9 @@ void InstallHook()
 
     // kernel32.dll --> KernelBase.dll --> ntdll.dll
     GET_FUNCTION(hModule, CreateDirectoryW);
-    GET_FUNCTION(hModule, MoveFileExW);
+    GET_FUNCTION(hModule, DeleteFileW);
+    GET_FUNCTION(hModule, MoveFileWithProgressW);
+    GET_FUNCTION(hModule, SetFileInformationByHandle);
 
     MH_Initialize();
 
@@ -401,7 +450,9 @@ void InstallHook()
     HOOK_FUNCTION(GetFileAttributesExW); // GetFileAttributesEx --> GetFileAttributesExW
     HOOK_FUNCTION(FindFirstFileExW); // FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW
     HOOK_FUNCTION(CreateDirectoryW); // CreateDirectorA --> CreateDirectoryW --> NtCreateFile
-    HOOK_FUNCTION(MoveFileExW);
+    HOOK_FUNCTION(DeleteFileW);
+    HOOK_FUNCTION(MoveFileWithProgressW);
+    HOOK_FUNCTION(SetFileInformationByHandle);
 
     MH_EnableHook(MH_ALL_HOOKS);
 
