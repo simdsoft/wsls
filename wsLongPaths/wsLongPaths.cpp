@@ -34,6 +34,17 @@
 #define HOOK_FUNCTION(f) MH_CreateHook(f##_imp, f##_hook, (LPVOID*)&f##_imp)
 #define HOOK_FUNCTION_SAFE(f) if(f##_imp) MH_CreateHook(f##_imp, f##_hook, (LPVOID*)&f##_imp)
 
+// The undocumented API
+BOOL
+WINAPI
+MoveFileWithProgressTransactedW(
+    _In_     LPCWSTR lpExistingFileName,
+    _In_opt_ LPCWSTR lpNewFileName,
+    _In_opt_ LPPROGRESS_ROUTINE lpProgressRoutine,
+    _In_opt_ LPVOID lpData,
+    _In_     DWORD dwFlags
+);
+
 /*
 copy命令, 无论怎样均不支持超过249的长路径
 echo命令, 可以支持260长路径, 但必须有UNC前缀, 且路径必须是反斜杠
@@ -61,7 +72,8 @@ DEFINE_FUNCTION_PTR(CreateDirectoryW);
 /// msvcrt --> MoveFileA --> MoveFileWithProgressW
 /// </summary>
 /// 
-DEFINE_FUNCTION_PTR(MoveFileWithProgressW);
+DEFINE_FUNCTION_PTR(MoveFileExW);
+DEFINE_FUNCTION_PTR(MoveFileWithProgressTransactedW);
 DEFINE_FUNCTION_PTR(SetFileInformationByHandle);
 /*
 * // Renames the file named 'old_name' to be named 'new_name'.  Returns zero if
@@ -289,11 +301,35 @@ SetFileInformationByHandle_hook(
     return SetFileInformationByHandle_imp(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
-// All of MoveFileA/W, MoveFileExA/W will call MoveFileWithProgressW
-// workaround is MoveFileA
+// All of MoveFileA/W, MoveFileExA/W will call MoveFileWithProgressTransactedW
+// if MoveFileWithProgressTransactedW not present, make MoveFileExW works, @ndk-r21d
 BOOL
 WINAPI
-MoveFileWithProgressW_hook(
+MoveFileExW_hook(
+    _In_     LPCWSTR lpExistingFileName,
+    _In_opt_ LPCWSTR lpNewFileName,
+    _In_     DWORD    dwFlags
+)
+{
+    auto styledPath = wsls::makeStyledPath(lpExistingFileName);
+
+    auto fileName = PathFindFileNameW(lpNewFileName);
+    std::wstring newFilePath;
+    if (fileName)
+    {
+        newFilePath.assign(lpNewFileName, fileName - lpNewFileName);
+        auto tmpDir = wsls::makeStyledPath(newFilePath.c_str());
+        if (!tmpDir.empty()) newFilePath.swap(tmpDir);
+        newFilePath += fileName;
+    }
+
+    return MoveFileExW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
+        newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
+}
+
+BOOL
+WINAPI
+MoveFileWithProgressTransactedW_hook(
     _In_     LPCWSTR lpExistingFileName,
     _In_opt_ LPCWSTR lpNewFileName,
     _In_opt_ LPPROGRESS_ROUTINE lpProgressRoutine,
@@ -313,7 +349,7 @@ MoveFileWithProgressW_hook(
          newFilePath += fileName;
      }
      
-     return MoveFileWithProgressW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
+     return MoveFileWithProgressTransactedW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
          newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), lpProgressRoutine, lpData, dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
 }
 
@@ -436,7 +472,8 @@ void InstallHook()
     // kernel32.dll --> KernelBase.dll --> ntdll.dll
     GET_FUNCTION(hModule, CreateDirectoryW);
     GET_FUNCTION(hModule, DeleteFileW);
-    GET_FUNCTION(hModule, MoveFileWithProgressW);
+    GET_FUNCTION(hModule, MoveFileExW);
+    GET_FUNCTION(hModule, MoveFileWithProgressTransactedW);
     GET_FUNCTION(hModule, SetFileInformationByHandle);
 
     MH_Initialize();
@@ -451,7 +488,12 @@ void InstallHook()
     HOOK_FUNCTION(FindFirstFileExW); // FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW
     HOOK_FUNCTION(CreateDirectoryW); // CreateDirectorA --> CreateDirectoryW --> NtCreateFile
     HOOK_FUNCTION(DeleteFileW);
-    HOOK_FUNCTION(MoveFileWithProgressW);
+    
+    if(MoveFileWithProgressTransactedW_imp)
+        HOOK_FUNCTION(MoveFileWithProgressTransactedW);
+    else
+        HOOK_FUNCTION(MoveFileExW);
+
     HOOK_FUNCTION(SetFileInformationByHandle);
 
     MH_EnableHook(MH_ALL_HOOKS);
