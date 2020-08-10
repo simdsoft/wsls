@@ -13,7 +13,7 @@
 
 #define ENABLE_MSGBOX_TRACE 0
 
-#define DEBUG_MODULE L"arm-linux-androideabi-ar.exe"
+#define DEBUG_MODULE L"cmake.exe"
 
 #if defined(_WIN64)
 #if defined(_DEBUG)
@@ -42,7 +42,8 @@ MoveFileWithProgressTransactedW(
     _In_opt_ LPCWSTR lpNewFileName,
     _In_opt_ LPPROGRESS_ROUTINE lpProgressRoutine,
     _In_opt_ LPVOID lpData,
-    _In_     DWORD dwFlags
+    _In_     DWORD dwFlags,
+    _In_     LPVOID lpUnknown
 );
 
 /*
@@ -334,7 +335,8 @@ MoveFileWithProgressTransactedW_hook(
     _In_opt_ LPCWSTR lpNewFileName,
     _In_opt_ LPPROGRESS_ROUTINE lpProgressRoutine,
     _In_opt_ LPVOID lpData,
-    _In_     DWORD dwFlags
+    _In_     DWORD dwFlags,
+    _In_     LPVOID pUnknown
 )
 {
      auto styledPath = wsls::makeStyledPath(lpExistingFileName);
@@ -350,7 +352,7 @@ MoveFileWithProgressTransactedW_hook(
      }
      
      return MoveFileWithProgressTransactedW_imp(styledPath.empty() ? lpExistingFileName : styledPath.c_str(),
-         newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), lpProgressRoutine, lpData, dwFlags/* | MOVEFILE_REPLACE_EXISTING*/);
+         newFilePath.empty() ? lpNewFileName : newFilePath.c_str(), lpProgressRoutine, lpData, dwFlags/* | MOVEFILE_REPLACE_EXISTING*/, pUnknown);
 }
 
 DWORD
@@ -453,40 +455,74 @@ void InstallHook()
     wchar_t currentDirectory[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, currentDirectory);
 #endif
+    /// --------------------------------------  KernelBase.dll -------------------------------------------------
+    /// <summary>
+    /// win7/10 follow APIs in KernelBase.dll
+    /// crt functions will call KernelBase.dll on win10 directory, so we try hook from KernelBase.dll directly
+    /// </summary>
+    HMODULE hModule = GetModuleHandle(L"KernelBase.dll");
+    GET_FUNCTION(hModule, CreateFileA);
 
-    // The API CreateProcess call flow
-    // Windows 7: kernel32.dll --> ntdll.dll
-    // Windows 10: kernel32.dll --> kernelbase.dll --> ntdll.dll
-    HMODULE hModule = GetModuleHandle(L"Kernel32.dll");
+    /* _stat64 --> CreateFileW */
+    GET_FUNCTION(hModule, CreateFileW);
+
+    /* because the win32 API GetFullPathNameA can't process long path ware, so we need to patch it to fix */
+    GET_FUNCTION(hModule, GetFullPathNameA); 
+
+    /* GetFileAttributesA --> GetFileAttributesW */
+    GET_FUNCTION(hModule, GetFileAttributesW); 
+
+    /* GetFileAttributesEx --> GetFileAttributesExW */
+    GET_FUNCTION(hModule, GetFileAttributesExW);
+
+    /*  FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW */
+    GET_FUNCTION(hModule, FindFirstFileExW);
+
+    /* CreateDirectorA(KernelBase.dll) --> CreateDirectoryW(KernelBase.dll) --> NtCreateFile(ntdll.dll) */
+    GET_FUNCTION(hModule, CreateDirectoryW);
+
+    /* Kernel32.dll --> DeleteFileA(KernelBase.dll) --> DeleteFileW(KernelBase.dll) --> NtOpenFile(ntdll.dll) */
+    GET_FUNCTION(hModule, DeleteFileW);
+
+    /*
+    * win10 in Kernel32.dll/KernelBase.dll all MoveFile<Ex>(A/W) depends on MoveFileWithProgressTransactedW
+    * win7 in Kernel32.dll, MoveFileA/W, MoveFileExA/W, MoveFile not dependency on MoveFileEx
+    */
+    GET_FUNCTION(hModule, MoveFileExW);
+
+    /* win10 only, win7 no this API */
+    GET_FUNCTION(hModule, MoveFileWithProgressTransactedW);
+
+    /* SetFileInformationByHandle(Kernel32.dll) --> SetFileInformationByHandle(KernelBase.dll) */
+    GET_FUNCTION(hModule, SetFileInformationByHandle);
+
+    /// --------------------------------------  Kernel32.dll -------------------------------------------------
+    /// The API CreateProcess call flow
+    /// Windows 7: kernel32.dll --> ntdll.dll
+    /// Windows 10: kernel32.dll --> kernelbase.dll --> ntdll.dll
+    hModule = GetModuleHandle(L"Kernel32.dll");
     GET_FUNCTION(hModule, CreateProcessA);
     GET_FUNCTION(hModule, CreateProcessW);
 
-    hModule = GetModuleHandle(L"KernelBase.dll");
-    GET_FUNCTION(hModule, CreateFileA);
-    GET_FUNCTION(hModule, CreateFileW);
-    GET_FUNCTION(hModule, GetFullPathNameA);
-    GET_FUNCTION(hModule, GetFileAttributesW);
-    GET_FUNCTION(hModule, GetFileAttributesExW);
-    GET_FUNCTION(hModule, FindFirstFileExW);
+    // win7: Not in KernelBase.dll, Get it from Kernel32.dll again
+    if (!MoveFileExW_imp) 
+        GET_FUNCTION(hModule, MoveFileExW);
 
-    // kernel32.dll --> KernelBase.dll --> ntdll.dll
-    GET_FUNCTION(hModule, CreateDirectoryW);
-    GET_FUNCTION(hModule, DeleteFileW);
-    GET_FUNCTION(hModule, MoveFileExW);
-    GET_FUNCTION(hModule, MoveFileWithProgressTransactedW);
-    GET_FUNCTION(hModule, SetFileInformationByHandle);
+    // TODO?
+    /* win7: (CreateDirectorTranscatedA --> CreateDirectoryTransactedW)/CreateDirectoryExA --> CreateDirectoryExW(kernel32.dll) --> NtOpenFile(ntdll.dll) */
+    // GET_FUNCTION(hModule, CreateDirectoryExW);
 
     MH_Initialize();
 
     HOOK_FUNCTION(CreateProcessA);
     HOOK_FUNCTION(CreateProcessW);
     HOOK_FUNCTION(CreateFileA);
-    HOOK_FUNCTION(CreateFileW); // _stat64 --> CreateFileW
-    HOOK_FUNCTION(GetFullPathNameA); // because the win32 API GetFullPathNameA can't process long path ware, so we need to patch it to fix
-    HOOK_FUNCTION(GetFileAttributesW); // GetFileAttributesA --> GetFileAttributesW
-    HOOK_FUNCTION(GetFileAttributesExW); // GetFileAttributesEx --> GetFileAttributesExW
-    HOOK_FUNCTION(FindFirstFileExW); // FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW
-    HOOK_FUNCTION(CreateDirectoryW); // CreateDirectorA --> CreateDirectoryW --> NtCreateFile
+    HOOK_FUNCTION(CreateFileW); 
+    HOOK_FUNCTION(GetFullPathNameA);
+    HOOK_FUNCTION(GetFileAttributesW);
+    HOOK_FUNCTION(GetFileAttributesExW);
+    HOOK_FUNCTION(FindFirstFileExW);
+    HOOK_FUNCTION(CreateDirectoryW);
     HOOK_FUNCTION(DeleteFileW);
     
     if(MoveFileWithProgressTransactedW_imp)
