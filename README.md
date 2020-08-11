@@ -1,6 +1,7 @@
 # wsLongPaths
 
-[![Release](https://img.shields.io/badge/release-v3.3.3-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/nko8ulow8tcftuvp/branch/master?svg=true)](https://ci.appveyor.com/project/halx99/wslongpaths)
+[![Release](https://img.shields.io/badge/release-v3.4-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on windows 7 x64+
 * Feature: This patch can make Android ndk r14 or later support LongPaths on windows 7 x64+
@@ -8,7 +9,7 @@
 * Remark: Please ensure your anti-virus software allow wsLongPaths.dll & wow64helper.exe
 
 ## Core file description
-* wsLongPaths.dll: the core file to make any application support Long Paths
+* wsls-core.dll: the core file to make any application support Long Paths
 * wow64helper.exe: the inject helper for inject wsLongPaths.dll to target application
 
 ## Who need this patch?
