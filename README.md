@@ -10,7 +10,7 @@
 
 ## Core file description
 * wsls-core.dll: the core file to make any application support Long Paths
-* wow64helper.exe: the inject helper for inject wsLongPaths.dll to target application
+* wow64helper.exe: the inject helper for inject wsls-core.dll to target application
 
 ## Who need this patch?
 * You only want windows, and encounter long path issue on exist software system, such as android ndk,sdk
