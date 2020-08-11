@@ -5,7 +5,7 @@
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on win7/win10
 * Feature: This patch can make Android ndk r14 or later support LongPaths on win7/win10 x64
-* Update since v3.4: Android ndk(r16~r21) ndk-build/cmake works on win7/win10 x64
+* Update since v3.4: Android ndk(r14b~r21) ndk-build/cmake works on win7/win10 x64
 * Remark: Please ensure your anti-virus software allow wsls-core.dll & wow64helper.exe
 
 ## Core files description
