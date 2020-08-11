@@ -1,4 +1,5 @@
-* Revision: 3.3.3
+* Revision: 3.4
+* You should build all binaries by youself except gnumake.exe with ```cmake + vs2019``` before run install.bat
 * Project url: https://github.com/halx99/wsLongPaths
 * gnumake.exe: build from http://ftp.gnu.org/gnu/make/ 4.3, because ndk-make maybe too old, always said: ```ndk-make: *** INTERNAL: readdir: Invalid argument.  Stop.```
 * Requirement: Visual Studio 2019 Redist (x86) and (x64) required, can be download at: https://dl.x-studio.net/

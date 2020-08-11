@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include <Windows.h>
-#include "../libwsls/libwsls.h"
+#include "libwsls.h"
 
 int main(int /*argc*/, char** /*argv*/)
 {

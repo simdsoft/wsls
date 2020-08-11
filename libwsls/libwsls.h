@@ -82,17 +82,3 @@ inline bool isStyledWindowsPath(const _Elem* _Path)
     return true;
 }
 };
-
-#if defined(_WIN64)
-#if defined(_DEBUG)
-#pragma comment(lib, "../x64/Debug/libwsls.lib")
-#else
-#pragma comment(lib, "../x64/Release/libwsls.lib")
-#endif
-#else
-#if defined(_DEBUG)
-#pragma comment(lib, "../Debug/libwsls.lib")
-#else
-#pragma comment(lib, "../Release/libwsls.lib")
-#endif
-#endif

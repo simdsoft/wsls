@@ -453,7 +453,7 @@ namespace wsls {
 
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
 
-        std::wstring parameter = sfmt(L"1 %u ntdll.dll LdrLoadDll u64;u64;us;s 0 0 wsLongPaths.dll 00000000", pi.dwProcessId/*, fileName*/);
+        std::wstring parameter = sfmt(L"1 %u ntdll.dll LdrLoadDll u64;u64;us;s 0 0 wsls-core.dll 00000000", pi.dwProcessId/*, fileName*/);
 
         std::wstring wow64helper = L"wow64helper.exe";
 

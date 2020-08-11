@@ -1,9 +1,8 @@
 // wsls-copy.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <Windows.h>
-#include "../libwsls/libwsls.h"
+#include "libwsls.h"
 
 int main(int /*argc*/, char** /*argv*/)
 {

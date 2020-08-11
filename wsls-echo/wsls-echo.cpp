@@ -1,16 +1,9 @@
 // wsls-echo.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <Windows.h>
 #include <string>
 #include "../libwsls/libwsls.h"
-
-#if defined(_DEBUG)
-#pragma comment(lib, "../x64/Debug/libwsls.lib")
-#else
-#pragma comment(lib, "../x64/Release/libwsls.lib")
-#endif
 
 int main(int argc, char** argv)
 {

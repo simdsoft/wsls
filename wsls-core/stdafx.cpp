@@ -1,8 +1,12 @@
 // stdafx.cpp : source file that includes just the standard includes
-// wsls-core.pch will be the pre-compiled header 
+// wsLongPaths.pch will be the pre-compiled header
 // stdafx.obj will contain the pre-compiled type information
 
-#include "stdafx.h"
+#include "stdafx.h" 
 
-// TODO: reference any additional headers you need in STDAFX.H
-// and not in this file
+#if defined(_DEBUG)
+#pragma comment(lib, "../x64/Debug/libwsls.lib")
+#else
+#pragma comment(lib, "../x64/Release/libwsls.lib")
+#endif
+

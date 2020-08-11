@@ -1,4 +1,4 @@
-@rem v3.3.3 This script install patch for android ndk(x64) and android sdk tools's .exe
+@rem v3.4 This script install patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 cd /d %~dp0
 
@@ -21,31 +21,34 @@ del /s /f /q "%ndkRoot%\*wow64helper.exe" 2>nul
 
 set X86HASH=
 set X64HASH=
-for /f "delims=" %%i in ('wsls-hash "x86/wsls-core.exe"') do set X86HASH=%%i
-for /f "delims=" %%i in ('wsls-hash "x64/wsls-core.exe"') do set X64HASH=%%i
+for /f "delims=" %%i in ('wsls-hash "x86/wsls-shell.exe"') do set X86HASH=%%i
+for /f "delims=" %%i in ('wsls-hash "x64/wsls-shell.exe"') do set X64HASH=%%i
 
 echo X86HASH=%X86HASH%
 echo X64HASH=%X64HASH%
 
 rem Install wsls core binaires
+del /q %WINDIR%\System32\wsLongPaths.dll 2>nul
 if exist %WINDIR%\SysWow64\ (
+  del /q %WINDIR%\SysWow64\wsLongPaths.dll 2>nul
+  
   copy /y x64\wsls-copy.exe %WINDIR%\System32\
   copy /y x64\wsls-del.exe %WINDIR%\System32\
   copy /y x64\wsls-md.exe %WINDIR%\System32\
   copy /y x64\wow64helper.exe %WINDIR%\System32\
-  copy /y x64\wsLongPaths.dll %WINDIR%\System32\
+  copy /y x64\wsls-core.dll %WINDIR%\System32\
   
   copy /y x86\wsls-copy.exe %WINDIR%\SysWow64\
   copy /y x86\wsls-del.exe %WINDIR%\SysWow64\
   copy /y x86\wsls-md.exe %WINDIR%\SysWow64\
   copy /y x86\wow64helper.exe %WINDIR%\SysWow64\
-  copy /y x86\wsLongPaths.dll %WINDIR%\SysWow64\
+  copy /y x86\wsls-core.dll %WINDIR%\SysWow64\
 ) else (
   copy /y x86\wsls-copy.exe %WINDIR%\System32\
   copy /y x86\wsls-del.exe %WINDIR%\System32\
   copy /y x86\wsls-md.exe %WINDIR%\System32\
   copy /y x86\wow64helper.exe %WINDIR%\System32\
-  copy /y x86\wsLongPaths.dll %WINDIR%\System32\
+  copy /y x86\wsls-core.dll %WINDIR%\System32\
 )
 
 rem detect ndk revision
@@ -207,7 +210,7 @@ rem --- perform install
 rem make a copy of original xxx.exe to ndk-xxx.exe
 if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
 
-wsls-copy %arch%\wsls-core.exe "%instDir%\%instApp%"
+wsls-copy %arch%\wsls-shell.exe "%instDir%\%instApp%"
 
 echo Installing patch for %instApp%(%arch%) succeed.
 goto :eof
