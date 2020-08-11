@@ -1,5 +1,5 @@
 * Revision: 3.4
-* Since v3.4, you should build all binaries by youself except gnumake.exe with ```cmake + vs2019``` before run install.bat or download ```wsls-3.x.zip``` from [Releases](https://github.com/simdsoft/wsLongPaths/releases)
+* Since v3.4, you should build all binaries by youself except gnumake.exe with ```cmake + vs2019``` before run install.bat or download ```nd-wsls-3.x.zip``` from [Releases](https://github.com/simdsoft/wsLongPaths/releases)
 * install.bat
 ```bat
   install.bat <path\to\ndk\> <path\to\sdk>
