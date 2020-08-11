@@ -13,6 +13,7 @@
 *.userprefs
 
 /build*
+/dists/*.exe
 
 # Build results
 [Dd]ebug/
