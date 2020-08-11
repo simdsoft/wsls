@@ -15,8 +15,8 @@
 ## Who need this patch?
 * You only want windows, and encounter long path issue on exist software system, such as android ndk,sdk
 * Even win10 provide LongPath ware system config, but still doesn't works for android build system when path too long
-* Some windows systwm command does't support long path even open system LongPath ware config, may windows bug or performance purpose,  
-if you find copy, md, del works with long path on future release of win10, please info me.
+* Some windows system command does't support long path even open system LongPath ware config, may windows bug or performance purpose,  
+if you find the commands: ```copy, md, del, echo``` works with long path on future release of win10, please info me.
   
 ## Install patch for android ndk & sdk:  
 1. Set env var ```ANDROID_NDK``` to your android ndk root directory  
