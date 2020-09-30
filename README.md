@@ -1,7 +1,7 @@
 # wsLongPaths
 
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/nko8ulow8tcftuvp/branch/master?svg=true)](https://ci.appveyor.com/project/halx99/wslongpaths)
-[![Release](https://img.shields.io/badge/release-v3.4-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
+[![Release](https://img.shields.io/badge/release-v3.4.1-blue.svg)](https://github.com/simdsoft/wsLongPaths/releases)
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on win7/win10
 * Feature: This patch can make Android ndk r14 or later support LongPaths on win7/win10 x64
