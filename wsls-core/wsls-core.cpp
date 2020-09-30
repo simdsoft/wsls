@@ -137,7 +137,7 @@ CreateProcessA_hook(
         {// Replace the system copy which does not support long path >= 249
             wsls::writeFileData(lpApplicationName, fileContent);
         }
-        else if (fileContent.find("wsls-del") == std::string::npos && wsls::replace_once(fileContent, "del", "wsls-del"))
+        else if (fileContent.find("wsls-del") == std::string::npos && wsls::replace_once(fileContent, "del /f/q", "wsls-del /f/q"))
         {// Replace the system del which does not support long path >= 249
             wsls::writeFileData(lpApplicationName, fileContent);
         }
