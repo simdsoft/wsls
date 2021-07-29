@@ -473,7 +473,7 @@ namespace wsls {
 
         DWORD exitCode = 0;
         GetExitCodeProcess(pi.hProcess, &exitCode);
-
+        CloseHandle(pi.hProcess);
 #if _DEBUG
         wprintf(L"=============> %s retval=%d\n", app, exitCode);
 #endif
