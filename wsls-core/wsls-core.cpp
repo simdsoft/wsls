@@ -33,10 +33,10 @@ MoveFileWithProgressTransactedW(
 );
 
 /*
-copyÃüÁî, ÎŞÂÛÔõÑù¾ù²»Ö§³Ö³¬¹ı249µÄ³¤Â·¾¶
-echoÃüÁî, ¿ÉÒÔÖ§³Ö260³¤Â·¾¶, µ«±ØĞëÓĞUNCÇ°×º, ÇÒÂ·¾¶±ØĞëÊÇ·´Ğ±¸Ü
-ndkÌá¹©µÄecho.exe,(¿ÉÒÔÖ§³Ö260³¤Â·¾¶, µ«±ØĞëÓĞUNCÇ°×º, ÇÒÂ·¾¶±ØĞëÊÇ·´Ğ±¸Ü)
-delÃüÁî, ÎŞÂÛÈçºÎ¶¼²»Ö§³Ö260³¤Â·¾¶
+copyå‘½ä»¤, æ— è®ºæ€æ ·å‡ä¸æ”¯æŒè¶…è¿‡249çš„é•¿è·¯å¾„
+echoå‘½ä»¤, å¯ä»¥æ”¯æŒ260é•¿è·¯å¾„, ä½†å¿…é¡»æœ‰UNCå‰ç¼€, ä¸”è·¯å¾„å¿…é¡»æ˜¯åæ–œæ 
+ndkæä¾›çš„echo.exe,(å¯ä»¥æ”¯æŒ260é•¿è·¯å¾„, ä½†å¿…é¡»æœ‰UNCå‰ç¼€, ä¸”è·¯å¾„å¿…é¡»æ˜¯åæ–œæ )
+delå‘½ä»¤, æ— è®ºå¦‚ä½•éƒ½ä¸æ”¯æŒ260é•¿è·¯å¾„
 */
 DEFINE_FUNCTION_PTR(CreateProcessA);
 DEFINE_FUNCTION_PTR(CreateProcessW);
@@ -444,7 +444,7 @@ void InstallHook()
     /// --------------------------------------  KernelBase.dll -------------------------------------------------
     /// <summary>
     /// win7/10 follow APIs in KernelBase.dll
-    /// crt functions will call KernelBase.dll on win10 directory, so we try hook from KernelBase.dll directly
+    /// crt functions will call KernelBase.dll on win10, so we try hook from KernelBase.dll directly
     /// </summary>
     HMODULE hModule = GetModuleHandle(L"KernelBase.dll");
     GET_FUNCTION(hModule, CreateFileA);
