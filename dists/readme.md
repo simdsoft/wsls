@@ -14,7 +14,7 @@
       cmake -B build_x64
       cmake --build build_x64 --config Release --target INSTALL
       ```
-  3. Now the required binaries are in wsLongPaths/dists/
+  3. Now the required binaries are in `wsLongPaths/dists/`
 * install.bat
     ```bat
       install.bat <path\to\ndk\> <path\to\sdk>
