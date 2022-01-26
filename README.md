@@ -5,9 +5,9 @@
 [![Release](https://img.shields.io/badge/dynamic/json.svg?label=Latest%20Release&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fsimdsoft%2FwsLongPaths%2Freleases%2Flatest&query=%24.name&colorB=blue)](../../releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/simdsoft/wsLongPaths/total.svg?label=Downloads&colorB=orange)](../../releases/latest)
 
-* Purpose: This patch should make any x86/x64 applications support LongPath on win7/win10
-* Feature: This patch can make Android ndk r14 or later support LongPaths on win7/win10 x64
-* Update since v3.4: Android ndk(r14b~r21) ndk-build/cmake works on win7/win10 x64
+* Purpose: This patch should make any x86/x64 applications support LongPath on win7+
+* Feature: This patch can make Android ndk r14 or later support LongPaths on win7+ x64
+* Update since v3.4: Android ndk(r14b~r21e) ndk-build/cmake works on win7+ x64
 * Remark: Please ensure your anti-virus software allow **wsls-core.dll** & **wow64helper.exe**
 
 ## Core files description
