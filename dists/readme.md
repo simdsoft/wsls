@@ -1,4 +1,4 @@
-* Revision: 3.4
+* Revision: 3.5
 * Since v3.4, download ```ndk-wsls-3.x.zip``` from [releases](https://github.com/simdsoft/wsLongPaths/releases) or build all binaries by youself except gnumake.exe with ```vs2019 + cmake``` before run install.bat, see follow build steps:
   1. Ensure vs2019 and cmake-3.10 or later installed
   2. Run follow commands:
