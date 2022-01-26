@@ -392,7 +392,7 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 			rpwrite(hProcess, us + offsetof(UNICODE_STRING, Length), &totalBytes, 2);
 			rpwrite(hProcess, us + offsetof(UNICODE_STRING, Buffer), &rbuffer, sizeof(rbuffer));
 
-			remoteArg.value.us = (UNICODE_STRING*)us;
+			remoteArg.value.vptr = us;
 			remoteArg.rbuf = rbuffer;
 		}
 		else {
