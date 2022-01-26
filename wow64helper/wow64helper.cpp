@@ -1,4 +1,4 @@
-// Copyright (c) 2017~2020 Simdsoft Limited - All Rights Reserved.
+// Copyright (c) 2017~2022 Simdsoft Limited - All Rights Reserved.
 #include <Windows.h>
 #include <Shlwapi.h>
 #include <ShellAPI.h>
@@ -75,14 +75,15 @@ struct RemoteArg
 {
 	int type = 0; // 0: integer, 1: string, 2: wstring, 3: UNICODE_STRING
 	union {
-		char* valuestring;
-		wchar_t* valuewstring;
-		uintptr_t valueint = 0;
-		void* ptr;
-		UNICODE_STRING* valueus;
+		char* s;
+		wchar_t* ws;
+		uintptr_t uptr = 0;
+		void* vptr;
+		UNICODE_STRING* us;
 	} value;
 
-	void* usbuf = nullptr; // store unicode string buffer address to avoid call ReadProcessMemory when free it
+	// The remote buffer store the unicode string content
+	void* rbuf = nullptr;
 };
 
 inline
@@ -199,7 +200,7 @@ ZwResumeProcessProc     ZwResumeProcess;
 //	* LdrLoadDllProc)(
 //
 //		IN PWCHAR               PathToFile OPTIONAL,
-//		IN ULONG                Flags OPTIONAL,
+//		IN PULONG               Flags OPTIONAL,
 //		IN PUNICODE_STRING      ModuleFileName,
 //		OUT PHANDLE             ModuleHandle);
 
@@ -361,38 +362,38 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 		if (wcscmp(s, L"u64") == 0 || wcscmp(s, L"uptr") == 0)
 		{
 			remoteArg.type = 0;
-			remoteArg.value.valueint = wcs_to_uptr(argv[formatc], nullptr, 10);
+			remoteArg.value.uptr = wcs_to_uptr(argv[formatc], nullptr, 10);
 		}
 		else if (wcscmp(s, L"s") == 0)
 		{
 			remoteArg.type = 1;
 			auto string = transcode(argv[formatc]);
-			remoteArg.value.valuestring = rpstrdup(hProcess, string);
+			remoteArg.value.s = rpstrdup(hProcess, string);
 			free(string);
 		}
 		else if (wcscmp(s, L"ws") == 0)
 		{
 			remoteArg.type = 2;
-			remoteArg.value.valuewstring = rpwcsdup(hProcess, argv[formatc]);
+			remoteArg.value.ws = rpwcsdup(hProcess, argv[formatc]);
 		}
 		else if (wcscmp(s, L"us") == 0)
 		{
 			remoteArg.type = 3;
 
-			char* struc = (char*)rpalloc(hProcess, sizeof(UNICODE_STRING));
+			uint8_t* us = (uint8_t*)rpalloc(hProcess, sizeof(UNICODE_STRING));
 
 			WORD length = static_cast<WORD>(wcslen(argv[formatc]));
 			auto totalBytes = (length + 1) * 2;
 			auto rbuffer = rpalloc(hProcess, totalBytes);
 			rpwrite(hProcess, rbuffer, argv[formatc], totalBytes);
 
-			rpwrite(hProcess, struc + offsetof(UNICODE_STRING, MaximumLength), &totalBytes, 2);
+			rpwrite(hProcess, us + offsetof(UNICODE_STRING, MaximumLength), &totalBytes, 2);
 			totalBytes -= sizeof(wchar_t);
-			rpwrite(hProcess, struc + offsetof(UNICODE_STRING, Length), &totalBytes, 2);
-			rpwrite(hProcess, struc + offsetof(UNICODE_STRING, Buffer), &rbuffer, sizeof(rbuffer));
+			rpwrite(hProcess, us + offsetof(UNICODE_STRING, Length), &totalBytes, 2);
+			rpwrite(hProcess, us + offsetof(UNICODE_STRING, Buffer), &rbuffer, sizeof(rbuffer));
 
-			remoteArg.usbuf = rbuffer;
-			remoteArg.value.ptr = struc;
+			remoteArg.value.us = (UNICODE_STRING*)us;
+			remoteArg.rbuf = rbuffer;
 		}
 		else {
 			// error
@@ -472,15 +473,15 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 			if (formatc > 1) {
 				// mov rdx, ?; 2nd arg
 				*(uint16_t*)ptr = 0xBA48, ptr += sizeof(uint16_t);
-				*(uintptr_t*)ptr = remoteArgs[1].value.valueint, ptr += sizeof(uintptr_t);
+				*(uintptr_t*)ptr = remoteArgs[1].value.uptr, ptr += sizeof(uintptr_t);
 				if (formatc > 2) {
 					// mov r8, ?; 3rd arg
 					*(uint16_t*)ptr = 0xB849, ptr += sizeof(uint16_t);
-					*(uintptr_t*)ptr = remoteArgs[2].value.valueint, ptr += sizeof(uintptr_t);
+					*(uintptr_t*)ptr = remoteArgs[2].value.uptr, ptr += sizeof(uintptr_t);
 					if (formatc > 3) {
 						// mov r9, ? 4th arg
 						*(uint16_t*)ptr = 0xB949, ptr += sizeof(uint16_t);
-						*(uintptr_t*)ptr = remoteArgs[3].value.valueint, ptr += sizeof(uintptr_t);
+						*(uintptr_t*)ptr = remoteArgs[3].value.uptr, ptr += sizeof(uintptr_t);
 					}
 				}
 			}
@@ -517,7 +518,7 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 			assert(ptr - thunkLocal == thunkSize);
 			auto finalThunkCode = rpmemdup(hProcess, thunkLocal, thunkSize, PAGE_EXECUTE_READWRITE);
 
-			result = rpcall(option, hProcess, finalThunkCode, remoteArgs[0].value.ptr, exitCode);
+			result = rpcall(option, hProcess, finalThunkCode, remoteArgs[0].value.vptr, exitCode);
 
 			free(thunkLocal);
 		}
@@ -526,27 +527,27 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 	}
 	else {
 		// No thunk code needed, call directly
-		result = rpcall(option, hProcess, reinterpret_cast<void*>(procAddress), remoteArgs[0].value.ptr, exitCode);
+		result = rpcall(option, hProcess, reinterpret_cast<void*>(procAddress), remoteArgs[0].value.vptr, exitCode);
 	}
 #else // Win32
 	// All Win32 API is __stdcall
 	// means: Use stack for passing parameters, right --> left
-    /*
-    * 00EF1072 68 FF FF FF 7F     push        7FFFFFFFh
-    00EF1077 68 FF FF FF 7F       push        7FFFFFFFh
-    00EF107C 68 FF FF FF 7F       push        7FFFFFFFh
-    00EF1081 68 FF FF FF 7F       push        7FFFFFFFh
-    001B1086 FF D0                call        eax; The remote Proc address
-    00A3100D C2 0C 00             ret         0Ch
-    */
-    //00C5A8E8 B9 FF FF FF 7F       mov         ecx, 7FFFFFFFh
-    //00C5A8ED 50                   push        eax
-    //00C5A8EE FF E1                jmp         ecx
-    //0079A8E8 FF D1                call        ecx
-    //__asm mov ecx, 0x7fffffff;
-    //__asm push eax;
-    //__asm jmp ecx;
-    //_asm call ecx;
+	/*
+	* 00EF1072 68 FF FF FF 7F     push        7FFFFFFFh
+	00EF1077 68 FF FF FF 7F       push        7FFFFFFFh
+	00EF107C 68 FF FF FF 7F       push        7FFFFFFFh
+	00EF1081 68 FF FF FF 7F       push        7FFFFFFFh
+	001B1086 FF D0                call        eax; The remote Proc address
+	00A3100D C2 0C 00             ret         0Ch
+	*/
+	//00C5A8E8 B9 FF FF FF 7F       mov         ecx, 7FFFFFFFh
+	//00C5A8ED 50                   push        eax
+	//00C5A8EE FF E1                jmp         ecx
+	//0079A8E8 FF D1                call        ecx
+	//__asm mov ecx, 0x7fffffff;
+	//__asm push eax;
+	//__asm jmp ecx;
+	//_asm call ecx;
 
 	const unsigned char rpc_thunk_code_template[] = {
 	#if _ENABLE_INJECT_DEBUG
@@ -595,7 +596,7 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 		if (formatc > 0) { // push parameter n~2
 			for (int idx = formatc - 1; idx >= 0; --idx) {
 				*ptr++ = 0x68;
-				*(uintptr_t*)ptr = remoteArgs[idx].value.valueint, ptr += sizeof(uintptr_t);
+				*(uintptr_t*)ptr = remoteArgs[idx].value.uptr, ptr += sizeof(uintptr_t);
 			}
 		}
 
@@ -632,13 +633,13 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 		assert(ptr - thunkLocal == thunkSize);
 		auto finalThunkCode = rpmemdup(hProcess, thunkLocal, thunkSize, PAGE_EXECUTE_READWRITE);
 
-		result = rpcall(option, hProcess, finalThunkCode, remoteArgs[0].value.ptr, exitCode);
+		result = rpcall(option, hProcess, finalThunkCode, remoteArgs[0].value.vptr, exitCode);
 
 		free(thunkLocal);
 	}
 	else {
 		// No thunk code needed, call directly
-		result = rpcall(option, hProcess, reinterpret_cast<void*>(procAddress), remoteArgs[0].value.ptr, exitCode);
+		result = rpcall(option, hProcess, reinterpret_cast<void*>(procAddress), remoteArgs[0].value.vptr, exitCode);
 	}
 #endif
 
@@ -646,11 +647,11 @@ bool WowExecuteRemoteProc64(int option, HANDLE hProcess, wchar_t* lpModuleName, 
 	for (auto& remoteArg : remoteArgs)
 	{
 		if (remoteArg.type != 0) {
-			if (remoteArg.value.ptr != nullptr)
-				rpfree(hProcess, remoteArg.value.ptr);
+			if (remoteArg.value.vptr != nullptr)
+				rpfree(hProcess, remoteArg.value.vptr);
 
-			if (remoteArg.usbuf != nullptr)
-				rpfree(hProcess, remoteArg.usbuf);
+			if (remoteArg.rbuf != nullptr)
+				rpfree(hProcess, remoteArg.rbuf);
 		}
 	}
 

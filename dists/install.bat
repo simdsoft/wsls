@@ -1,4 +1,4 @@
-@rem v3.4 This script install patch for android ndk(x64) and android sdk tools's .exe
+@rem v3.5 This script install patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 cd /d %~dp0
 
@@ -13,6 +13,8 @@ if not exist "%sdkRoot%" echo No valid ANDROID_SDK directory specificed! & set s
 
 echo ndkRoot=%ndkRoot%
 echo sdkRoot=%sdkRoot%
+
+set realAppPrefix=wrl-
 
 rem Cleanup old version stubs
 del /s /f /q "%ndkRoot%\*.bridge" 2>nul
@@ -102,14 +104,14 @@ rem ---------------- the InstallPatchForSdkTools subprocedure ------------
 
 rem -- cmake
 FOR /f "delims=" %%i IN ('dir "%sdkRoot%\cmake" /ad /b') DO (
-  for /f "delims=" %%j in ('dir "%sdkRoot%\cmake\%%i\bin" /a-d /b ^| findstr /v "ndk-"') do (
-    call :InstallPatch "%sdkRoot%\cmake\%%i\bin" %%j
+  for /f "delims=" %%j in ('dir "%sdkRoot%\cmake\%%i\bin" /a-d /b ^| findstr /v "%realAppPrefix%" ^| findstr /v "ndk-"') do (
+    call :InstallPatch "%sdkRoot%\cmake\%%i\bin" %%j nil
   )
 )
 
 rem -- build-tools aidl.exe
 FOR /f "delims=" %%i IN ('dir "%sdkRoot%\build-tools" /ad /b') DO (
-  call :InstallPatch "%sdkRoot%\build-tools\%%i" aidl.exe
+  call :InstallPatch "%sdkRoot%\build-tools\%%i" aidl.exe nil
 )
 
 goto :eof
@@ -160,6 +162,8 @@ set instApp=%2
 set arch=%3
 set redApp=%4
 
+rem Upgrade 3.4.1 to 3.5.0, we use new prefix "wrl-" for real app
+if exist "%instDir%\ndk-%instApp%" move "%instDir%\ndk-%instApp%" "%instDir%\%realAppPrefix%%instApp%"
 
 rem -------- check parameters ------
 
@@ -167,13 +171,21 @@ rem -- clear parameter value if nil
 if "%arch%"=="nil" set arch=
 if "%redApp%"=="nil" set redApp=
 
-rem if not defined arch detect it auto
+rem if the arch undefined or nil, detect it auto
 setlocal ENABLEDELAYEDEXPANSION
 set errorlevel=
+
+rem Notes: ensure always detect arch from real app, this will auto fix previous release 3.4.x arch mismatch bug
 if not defined arch (
-  call wsls-arch.exe "%instDir%\%instApp%"
-  if !errorlevel! GTR 0 set arch=x!errorlevel!
+  if exist "%instDir%\%realAppPrefix%%instApp%" (
+    call wsls-arch.exe "%instDir%\%realAppPrefix%%instApp%"
+    if !errorlevel! GTR 0 set arch=x!errorlevel!
+  ) else (
+    call wsls-arch.exe "%instDir%\%instApp%"
+    if !errorlevel! GTR 0 set arch=x!errorlevel!
+  )
 )
+
 set errorlevel=
 setlocal DISABLEDELAYEDEXPANSION
 
@@ -207,8 +219,8 @@ if "%arch%"=="x64" (
 echo Installing patch for %instApp%...
 
 rem --- perform install
-rem make a copy of original xxx.exe to ndk-xxx.exe
-if not exist "%instDir%\ndk-%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\ndk-%instApp%"
+rem make a copy of original xxx.exe to wrl-xxx.exe
+if not exist "%instDir%\%realAppPrefix%%instApp%" wsls-copy "%instDir%\%instApp%" "%instDir%\%realAppPrefix%%instApp%"
 
 wsls-copy %arch%\wsls-shell.exe "%instDir%\%instApp%"
 

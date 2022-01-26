@@ -13,7 +13,7 @@
 
 #define ENABLE_MSGBOX_TRACE 0
 
-#define DEBUG_MODULE L"cmake.exe"
+#define DEBUG_MODULE L"aidl.exe"
 
 #define DEFINE_FUNCTION_PTR(f) static decltype(&f) f##_imp
 #define GET_FUNCTION(h,f) f##_imp = (decltype(f##_imp))GetProcAddress(h, #f)
@@ -521,8 +521,8 @@ void InstallHook()
     MH_EnableHook(MH_ALL_HOOKS);
 
     s_appName = PathFindFileName(appName);
-    if (s_appName.find(L"ndk-") != std::wstring::npos) {
-        s_oringalAppName = s_appName.substr(sizeof("ndk-") - 1);
+    if (s_appName.find(L"wrl-") != std::wstring::npos) {
+        s_oringalAppName = s_appName.substr(sizeof("wrl-") - 1);
     } 
     else {
         s_oringalAppName = s_appName;

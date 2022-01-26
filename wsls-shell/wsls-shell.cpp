@@ -27,8 +27,8 @@ int main(int /*argc*/, char** /*argv*/)
 
         strcpy(fileName + n, ".bridge");
         std::wstring app = wsls::from_chars(wsls::readFileData(fileName));
-        if (app.empty()) // default is the real compile program file name is prefix 'ndk-' 
-            app = L"ndk-" + shell; 
+        if (app.empty()) // default is the real compile program file name is prefix 'wrl-' 
+            app = L"wrl-" + shell; 
 
 #if WSLS_WAIT_DEBUGGER 
         MessageBoxW(nullptr, wsls::sfmt(L"%s --> %s", shell.c_str(), app.c_str()).c_str(), L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
