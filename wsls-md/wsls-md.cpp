@@ -21,8 +21,11 @@ int main(int /*argc*/, char** /*argv*/)
 
         if (!sourcePath.empty())
         {
-            wprintf(L"wsls-md: %s", sourcePath.c_str());
             iRet = wsls::mkdir(std::move(sourcePath));
+            if(iRet == 0)
+                wprintf(L"wsls-md: %s\n", sourcePath.c_str());
+            else
+                fwprintf(stderr, L"wsls-md: %s failed, error: %d\n", sourcePath.c_str(), iRet);
         }
     }
 

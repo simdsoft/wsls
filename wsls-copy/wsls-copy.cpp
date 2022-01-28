@@ -64,14 +64,12 @@ int main(int /*argc*/, char** /*argv*/)
     int iRet = ERROR_INVALID_PARAMETER;
     if (!sourcePath.empty() && !destPath.empty())
     {
-        wprintf(L"wsls-copy: %s --> %s", sourcePath.c_str(), destPath.c_str());
         if (CopyFile(sourcePath.c_str(), destPath.c_str(), FALSE)) {
-            iRet = 0;
-            wprintf(L" succeed.\n");
+            wprintf(L"wsls-copy: %s --> %s\n", sourcePath.c_str(), destPath.c_str());
         }
         else {
             iRet = GetLastError();
-            wprintf(L" failed, error: %d\n", iRet);
+            fwprintf(stderr, L"wsls-copy: %s --> %s failed, error: %d\n", sourcePath.c_str(), destPath.c_str(), iRet);
         }
     }
 

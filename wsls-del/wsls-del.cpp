@@ -42,11 +42,13 @@ int main(int /*argc*/, char** /*argv*/)
     int iRet = 0; // ERROR_INVALID_PARAMETER;
     if (!sourcePath.empty())
     {
-        wprintf(L"wsls-del: %s", sourcePath.c_str());
-        if (DeleteFileW(sourcePath.c_str()))
-            iRet = 0;
-        else
+        if (DeleteFileW(sourcePath.c_str())) {
+            wprintf(L"wsls-del: %s\n", sourcePath.c_str());
+        }
+        else {
             iRet = GetLastError();
+            fwprintf(stderr, L"wsls-del: %s failed, error: %d\n", sourcePath.c_str(), iRet);
+        }
     }
 
     LocalFree(argv);
