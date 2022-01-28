@@ -171,6 +171,8 @@ rem -- clear parameter value if nil
 if "%arch%"=="nil" set arch=
 if "%redApp%"=="nil" set redApp=
 
+if not exist "%instDir%\%instApp%" echo "Skipping %instDir%\%instApp% which is not present in ndk-r%ndkVer%" && goto :eof
+
 rem if the arch undefined or nil, detect it auto
 setlocal ENABLEDELAYEDEXPANSION
 set errorlevel=
@@ -224,7 +226,7 @@ if not exist "%instDir%\%realAppPrefix%%instApp%" wsls-copy "%instDir%\%instApp%
 
 wsls-copy %arch%\wsls-shell.exe "%instDir%\%instApp%"
 
-echo Installing patch for %instApp%(%arch%) succeed.
+echo Install patch for %instApp%(%arch%) succeed.
 goto :eof
 
 :L_installed
