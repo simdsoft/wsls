@@ -1,4 +1,4 @@
-@REM v3.5 This script install patch for android ndk(x64) and android sdk tools's .exe
+@REM v3.5 This script uninstall patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 cd /d %~dp0
 
@@ -218,10 +218,11 @@ if "%arch%"=="x64" (
 
 echo Uninstalling patch for %instApp%...
 
-REM --- perform install
-REM make a copy of original xxx.exe to wrl-xxx.exe
-wsls-del "%instDir%\%instApp%"
-if exist "%instDir%\%realAppPrefix%%instApp%" move /Y "%instDir%\%realAppPrefix%%instApp%" "%instDir%\%instApp%"
+REM --- perform uninstall
+if exist "%instDir%\%realAppPrefix%%instApp%" (
+  wsls-del "%instDir%\%instApp%"
+  move /Y "%instDir%\%realAppPrefix%%instApp%" "%instDir%\%instApp%"
+)
 
 echo Uninstall patch for %instApp%(%arch%) succeed.
 goto :eof
