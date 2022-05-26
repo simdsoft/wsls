@@ -433,7 +433,7 @@ void InstallHook()
     GetModuleFileNameW(hAppModule, appName, MAX_PATH * 2); // Kernel32.dll --> KernelBase.dll: GetModuleFileNameA --> GetModuleFileNameW 
 #if defined(_DEBUG)
     if (wcsstr(appName, DEBUG_MODULE)) {
-        MessageBoxW(nullptr, wsls::sfmt(L"Install patch: wsLongPaths.dll for %s succeed.", appName).c_str(), L"Wating for debugger to attaching...", MB_OK | MB_ICONEXCLAMATION);
+        MessageBoxW(nullptr, wsls::sfmt(L"Install patch: wsls-core.dll for %s succeed.", appName).c_str(), L"Wating for debugger to attaching...", MB_OK | MB_ICONEXCLAMATION);
     }
 #endif
 
