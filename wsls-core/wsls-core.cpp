@@ -1,5 +1,5 @@
-// wsls-core.cpp : Defines the exported functions for the DLL application.
-// V3.4
+﻿// wsls-core.cpp : Defines the exported functions for the DLL application.
+// V3.5
 
 #include "stdafx.h"
 #include <stdio.h>
@@ -13,7 +13,7 @@
 
 #define ENABLE_MSGBOX_TRACE 0
 
-#define DEBUG_MODULE L"aidl.exe"
+#define DEBUG_MODULE L""
 
 #define DEFINE_FUNCTION_PTR(f) static decltype(&f) f##_imp
 #define GET_FUNCTION(h,f) f##_imp = (decltype(f##_imp))GetProcAddress(h, #f)
