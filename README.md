@@ -1,6 +1,6 @@
 # wsLongPaths
 [![Windows_x86 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x86/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x86)
-[![Windows_x64 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x64/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x64)
+[![Windows_x64 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x64/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x64)  
 [![Release](https://img.shields.io/github/v/release/simdsoft/wsLongPaths?include_prereleases&label=)](../../releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/simdsoft/wsLongPaths/total.svg?label=Downloads&colorB=orange)](../../releases/latest)
 
