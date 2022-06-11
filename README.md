@@ -1,8 +1,8 @@
 # wsLongPaths
 [![Windows_x86 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x86/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x86)
 [![Windows_x64 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x64/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x64)
-
-[![Release](https://img.shields.io/badge/dynamic/json.svg?label=Latest%20Release&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fsimdsoft%2FwsLongPaths%2Freleases%2Flatest&query=%24.name&colorB=blue)](../../releases/latest)
+https://img.shields.io/github/v/release/simdsoft/x-studio.github.io?include_prereleases&label=
+[![Release](https://img.shields.io/github/v/release/simdsoft/wsLongPaths?include_prereleases&label=)](../../releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/simdsoft/wsLongPaths/total.svg?label=Downloads&colorB=orange)](../../releases/latest)
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on win7+
