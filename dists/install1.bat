@@ -1,28 +1,9 @@
-@rem v3.5.2 This script install patch for android ndk(x64) and android sdk tools's .exe
+@rem v3.5.3 This script install patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 
-:: BatchGotAdmin
-:-------------------------------------
-REM  --> Check for permissions
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+set myDir=%~dp0
 
-REM --> If error flag set, we do not have admin.
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
-    goto UACPrompt
-) else ( goto gotAdmin )
-
-:UACPrompt
-echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-echo UAC.ShellExecute "cmd.exe", "/c %~s0 %*", "", "runas", 1 >> "%temp%\getadmin.vbs"
-
-"%temp%\getadmin.vbs"
-del "%temp%\getadmin.vbs"
-exit /B
-
-:gotAdmin
-pushd %cd%
-cd /d "%~dp0"
+cd /d "%myDir%"
 
 set instDir=%~dp1
 set instApp=%~nx1
@@ -39,20 +20,13 @@ for /f "delims=" %%i in ('wsls-hash "x64/wsls-shell.exe"') do set X64HASH=%%i
 echo X86HASH=%X86HASH%
 echo X64HASH=%X64HASH%
 
-rem Install wsls core binaires
-del /q %WINDIR%\System32\wsLongPaths.dll 2>nul
-if exist %WINDIR%\SysWow64\ (
-  del /q %WINDIR%\SysWow64\wsLongPaths.dll 2>nul
-  
-  copy /y x64\wow64helper.exe %WINDIR%\System32\
-  copy /y x64\wsls-core.dll %WINDIR%\System32\
-  
-  copy /y x86\wow64helper.exe %WINDIR%\SysWow64\
-  copy /y x86\wsls-core.dll %WINDIR%\SysWow64\
-) else (
-  copy /y x86\wow64helper.exe %WINDIR%\System32\
-  copy /y x86\wsls-core.dll %WINDIR%\System32\
+if "%WSLS_DIST%"=="" (
+  echo "Setting env var WSLS_DIST=%myDir%"
+  powershell "[Environment]::SetEnvironmentVariable('WSLS_DIST', '%myDir%', 'User')"
+  echo "Set env var WSLS_DIST=%myDir% done"
 )
+
+set PATH=%myDir%;%PATH%
 
 rem clear errorlevel before starting install patch
 set errorlevel=

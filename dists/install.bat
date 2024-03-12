@@ -1,4 +1,4 @@
-@rem v3.5 This script install patch for android ndk(x64) and android sdk tools's .exe
+@rem v3.5.3 This script install patch for android ndk(x64) and android sdk tools's .exe
 @echo off
 cd /d %~dp0
 
@@ -26,32 +26,16 @@ set X64HASH=
 for /f "delims=" %%i in ('wsls-hash "x86/wsls-shell.exe"') do set X86HASH=%%i
 for /f "delims=" %%i in ('wsls-hash "x64/wsls-shell.exe"') do set X64HASH=%%i
 
+if "%WSLS_DIST%"=="" (
+  echo "Setting env var WSLS_DIST=%myDir%"
+  powershell "[Environment]::SetEnvironmentVariable('WSLS_DIST', '%myDir%', 'User')"
+  echo "Set env var WSLS_DIST=%myDir% done"
+)
+
+set PATH=%myDir%;%PATH%
+
 echo X86HASH=%X86HASH%
 echo X64HASH=%X64HASH%
-
-rem Install wsls core binaires
-del /q %WINDIR%\System32\wsLongPaths.dll 2>nul
-if exist %WINDIR%\SysWow64\ (
-  del /q %WINDIR%\SysWow64\wsLongPaths.dll 2>nul
-  
-  copy /y x64\wsls-copy.exe %WINDIR%\System32\
-  copy /y x64\wsls-del.exe %WINDIR%\System32\
-  copy /y x64\wsls-md.exe %WINDIR%\System32\
-  copy /y x64\wow64helper.exe %WINDIR%\System32\
-  copy /y x64\wsls-core.dll %WINDIR%\System32\
-  
-  copy /y x86\wsls-copy.exe %WINDIR%\SysWow64\
-  copy /y x86\wsls-del.exe %WINDIR%\SysWow64\
-  copy /y x86\wsls-md.exe %WINDIR%\SysWow64\
-  copy /y x86\wow64helper.exe %WINDIR%\SysWow64\
-  copy /y x86\wsls-core.dll %WINDIR%\SysWow64\
-) else (
-  copy /y x86\wsls-copy.exe %WINDIR%\System32\
-  copy /y x86\wsls-del.exe %WINDIR%\System32\
-  copy /y x86\wsls-md.exe %WINDIR%\System32\
-  copy /y x86\wow64helper.exe %WINDIR%\System32\
-  copy /y x86\wsls-core.dll %WINDIR%\System32\
-)
 
 rem detect ndk revision
 set ndkVer=
