@@ -4,7 +4,7 @@
 
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
-// version: V3.4.x
+// version: V3.5.x
 #include <Shlwapi.h>
 #include "libwsls.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -296,7 +296,7 @@ namespace wsls {
                 {
                     uncPath.resize(offset + cch);
 #if defined(_DEBUG)
-                    _wsystem(sfmt(LR"(echo "wsLongPath.dll: convert NON-UNC long path to UNC Path: %s")", uncPath.c_str()).c_str());
+                    _wsystem(sfmt(LR"(echo "wsls.dll: convert NON-UNC long path to UNC Path: %s")", uncPath.c_str()).c_str());
 #endif
                     return uncPath;
                 }

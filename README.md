@@ -1,8 +1,8 @@
-# wsLongPaths
-[![Windows_x86 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x86/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x86)
-[![Windows_x64 Build Status](https://github.com/simdsoft/wsLongPaths/workflows/windows_x64/badge.svg)](https://github.com/simdsoft/wsLongPaths/actions?query=workflow%3Awindows_x64)
-[![Release](https://img.shields.io/github/v/release/simdsoft/wsLongPaths?include_prereleases&label=release)](../../releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/simdsoft/wsLongPaths/total.svg?label=Downloads&colorB=orange)](../../releases/latest)
+# wsls
+[![Windows_x86 Build Status](https://github.com/simdsoft/wsls/workflows/windows_x86/badge.svg)](https://github.com/simdsoft/wsls/actions?query=workflow%3Awindows_x86)
+[![Windows_x64 Build Status](https://github.com/simdsoft/wsls/workflows/windows_x64/badge.svg)](https://github.com/simdsoft/wsls/actions?query=workflow%3Awindows_x64)
+[![Release](https://img.shields.io/github/v/release/simdsoft/wsls?include_prereleases&label=release)](../../releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/simdsoft/wsls/total.svg?label=Downloads&colorB=orange)](../../releases/latest)
 
 * Purpose: This patch should make any x86/x64 applications support LongPath on win7+
 * Feature: This patch can make Android ndk r14 or later support LongPaths on win7+ x64
