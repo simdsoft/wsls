@@ -208,7 +208,7 @@ ZwResumeProcessProc     ZwResumeProcess;
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 #if _WAITING_DEBUGGER_ATTACH
-	MessageBox(nullptr, L"waiting for debugger to attach!", L"Tips", MB_OK);
+	MessageBox(nullptr, L"waiting for debugger to attach!", L"wow64helper.exe", MB_OK);
 #endif
 
 	int ret = -1;

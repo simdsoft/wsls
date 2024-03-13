@@ -4,6 +4,8 @@
 #include <string_view>
 #include "ntcvt.hpp"
 
+#define WSLS_MAX_PATH 4096
+
 namespace wsls {
 using namespace ntcvt;
 /*--- This a C++ universal sprintf in the future.
@@ -17,7 +19,7 @@ std::wstring sfmt(const wchar_t* format, ...);
 bool replace_once(std::string& string, const std::string& replaced_key, const std::string& replacing_key, size_t offset = 0);
 bool replace_once(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key, size_t offset = 0);
 int replace(std::wstring& string, const std::wstring& replaced_key, const std::wstring& replacing_key);
-int make_bridge(const wchar_t* shell, const wchar_t* app);
+int make_bridge(const wchar_t* shell, const wchar_t* app, bool forward_mode);
 std::string readFileData(const char* fileName);
 int writeFileData(const char* fileName, const std::string& content, bool append = false);
 void convertPathToWinStyle(std::string& path, size_t offset = 0);

@@ -381,7 +381,20 @@ namespace wsls {
         return error;
     }
 
-    int make_bridge(const wchar_t* shell, const wchar_t* app)
+    static void make_cmdline(wchar_t** argv, int argc, int offset, std::wstring& cmdline) {
+        cmdline.clear();
+        for(int i = offset; i < argc; ++i) {
+            if (!cmdline.empty())
+                cmdline += ' ';
+            auto arg = argv[i];
+            if (wcschr(arg, ' '))
+                (cmdline += '\"').append(arg) += '\"';
+            else
+                cmdline += arg;
+        }
+    }
+
+    int make_bridge(const wchar_t* shell, const wchar_t* app, bool forward_mode)
     {
         auto lpCmdLine = GetCommandLineW();
 
@@ -395,10 +408,7 @@ namespace wsls {
         wchar_t currentDir[MAX_PATH];
         GetCurrentDirectoryW(MAX_PATH, currentDir);
 
-        wchar_t filePath[MAX_PATH];
-        GetModuleFileName(NULL, filePath, MAX_PATH);
-
-        PathRemoveFileSpec(filePath);
+        static wchar_t appDir[WSLS_MAX_PATH];
 
         std::wstring maketool = lpCmdLine;
 
@@ -413,25 +423,36 @@ namespace wsls {
             return ERROR_FILE_NOT_FOUND;
         }
 
-        std::wstring param0 = wargv[0];
-        if (!do_replace(param0, shell, app))
-        {
-            wprintf(L"make bridge failed %s --> %s", shell, app);
-            return ERROR_OPERATION_ABORTED;
+        if (forward_mode) {
+            make_cmdline(wargv, argc, 1, maketool);
+            si.lpTitle = &maketool.front();
+            wcscpy(appDir, app);
         }
+        else {
+            std::wstring param0 = wargv[0];
+            if (!do_replace(param0, shell, app))
+            {
+                wprintf(L"make bridge failed %s --> %s", shell, app);
+                return ERROR_OPERATION_ABORTED;
+            }
 
-        if (!replace_once(maketool, wargv[0], param0))
-        {
-            wprintf(L"make bridge failed %s --> %s", shell, app);
-            return ERROR_OPERATION_ABORTED;
+            if (!replace_once(maketool, wargv[0], param0))
+            {
+                wprintf(L"make bridge failed %s --> %s", shell, app);
+                return ERROR_OPERATION_ABORTED;
+            }
+
+            std::wstring title = si.lpTitle;
+            do_replace(title, shell, app);
+            si.lpTitle = &title.front();
+
+            GetModuleFileName(NULL, appDir, MAX_PATH);
         }
 
         LocalFree(wargv);
 
-        std::wstring title = si.lpTitle;
-        do_replace(title, shell, app);
+        PathRemoveFileSpec(appDir);
 
-        si.lpTitle = &title.front();
         DWORD flags = CREATE_SUSPENDED;
         BOOL succeed = CreateProcessW(nullptr,
             &maketool.front(),
@@ -460,7 +481,7 @@ namespace wsls {
 
         sei.lpFile = wow64helper.c_str();
         sei.lpParameters = parameter.c_str();
-        sei.lpDirectory = filePath;
+        sei.lpDirectory = appDir;
 
         succeed = ShellExecuteEx(&sei);
 
