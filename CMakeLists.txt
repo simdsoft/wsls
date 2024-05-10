@@ -27,6 +27,7 @@ include_directories(
 set(CMAKE_INSTALL_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/dists)
 
 add_definitions(-DUNICODE -D_UNICODE)
+add_link_options("/Brepro")
 
 # print all cmake builtin variables
 # get_cmake_property(_variableNames VARIABLES)
