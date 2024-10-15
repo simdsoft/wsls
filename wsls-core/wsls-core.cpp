@@ -1,5 +1,5 @@
 ﻿// wsls-core.cpp : Defines the exported functions for the DLL application.
-// V3.5
+// V3.6.0
 
 #include "stdafx.h"
 #include <stdio.h>
@@ -48,6 +48,8 @@ DEFINE_FUNCTION_PTR(GetFileAttributesW);
 DEFINE_FUNCTION_PTR(GetFileAttributesExW);
 DEFINE_FUNCTION_PTR(FindFirstFileExW);
 DEFINE_FUNCTION_PTR(DeleteFileW);
+DEFINE_FUNCTION_PTR(SetFileAttributesW);
+DEFINE_FUNCTION_PTR(SetFileAttributesA);
 
 // since v3.3: cmake support
 // ndk-build: use 'md' command to create directory
@@ -405,6 +407,23 @@ GetFileAttributesExW_hook(
     return GetFileAttributesExW_imp(styledPath.c_str(), fInfoLevelId, lpFileInformation);
 }
 
+BOOL
+WINAPI
+SetFileAttributesW_hook(
+    _In_ LPCWSTR lpFileName,
+    _In_ DWORD dwFileAttributes
+)
+{
+#if ENABLE_MSGBOX_TRACE
+    MessageBox(nullptr, L"Call API: SetFileAttributesW...", L"Waiting debugger to attach...", MB_OK | MB_ICONEXCLAMATION);
+#endif
+    auto styledPath = wsls::makeStyledPath(lpFileName);
+    if (styledPath.empty()) {
+        return SetFileAttributesW_imp(lpFileName, dwFileAttributes);
+    }
+    return SetFileAttributesW_imp(styledPath.c_str(), dwFileAttributes);
+}
+
 HANDLE
 WINAPI
 FindFirstFileExW_hook(
@@ -461,6 +480,9 @@ void InstallHook()
     /* GetFileAttributesEx --> GetFileAttributesExW */
     GET_FUNCTION(hModule, GetFileAttributesExW);
 
+    /* SetFileAttributesA --> SetFileAttributesW */
+    GET_FUNCTION(hModule, SetFileAttributesW);
+
     /*  FindFirstFile(A/W), FindFirstFileExA --> FindFirstFileExW */
     GET_FUNCTION(hModule, FindFirstFileExW);
 
@@ -507,6 +529,7 @@ void InstallHook()
     HOOK_FUNCTION(GetFullPathNameA);
     HOOK_FUNCTION(GetFileAttributesW);
     HOOK_FUNCTION(GetFileAttributesExW);
+    HOOK_FUNCTION(SetFileAttributesW);
     HOOK_FUNCTION(FindFirstFileExW);
     HOOK_FUNCTION(CreateDirectoryW);
     HOOK_FUNCTION(DeleteFileW);
